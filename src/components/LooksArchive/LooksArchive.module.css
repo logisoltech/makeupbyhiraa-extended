@@ -199,83 +199,86 @@
   }
 
   /* Mobile Figma-style wall — overrides inline desktop coords only */
+  /* Top row — evenly spaced (keep clean) */
   .card:nth-child(1) {
-    left: 4% !important;
+    left: 5% !important;
     right: auto !important;
-    top: 5% !important;
+    top: 4% !important;
   }
 
   .card:nth-child(2) {
-    left: 25% !important;
+    left: 24% !important;
     right: auto !important;
-    top: 2% !important;
+    top: 3% !important;
   }
 
   .card:nth-child(3) {
-    left: 50% !important;
+    left: 43% !important;
     right: auto !important;
-    top: 1% !important;
-    margin-left: -31px !important;
+    top: 3% !important;
+    margin-left: 0 !important;
   }
 
   .card:nth-child(4) {
-    left: auto !important;
-    right: 25% !important;
-    top: 2% !important;
+    left: 62% !important;
+    right: auto !important;
+    top: 3% !important;
   }
 
   .card:nth-child(5) {
     left: auto !important;
-    right: 4% !important;
-    top: 5% !important;
+    right: 5% !important;
+    top: 4% !important;
   }
 
+  /* Middle row — spread outward so cards peek beside center */
   .card:nth-child(6) {
-    left: 5% !important;
+    left: 4% !important;
     right: auto !important;
-    top: 30% !important;
+    top: 31% !important;
   }
 
   .card:nth-child(7) {
-    left: 16% !important;
+    left: 17% !important;
     right: auto !important;
-    top: 34% !important;
+    top: 37% !important;
   }
 
   .card:nth-child(8) {
     left: auto !important;
-    right: 16% !important;
-    top: 34% !important;
+    right: 17% !important;
+    top: 37% !important;
   }
 
   .card:nth-child(9) {
     left: auto !important;
-    right: 5% !important;
-    top: 30% !important;
+    right: 4% !important;
+    top: 31% !important;
   }
 
+  /* Bottom row — balanced */
   .card:nth-child(10) {
-    left: 11% !important;
+    left: 12% !important;
     right: auto !important;
-    top: 62% !important;
+    top: 66% !important;
   }
 
   .card:nth-child(11) {
     left: 32% !important;
     right: auto !important;
-    top: 70% !important;
+    top: 72% !important;
   }
 
   .card:nth-child(12) {
     left: auto !important;
     right: 32% !important;
-    top: 70% !important;
+    top: 72% !important;
   }
 
   .card:nth-child(13) {
     left: auto !important;
-    right: 11% !important;
-    top: 62% !important;
+    right: 12% !important;
+    top: 66% !important;
   }
 
   .card:nth-child(14) {
@@ -308,7 +311,6 @@
     border-radius: 16px;
   }
 
-  .card:nth-child(3),
   .card:nth-child(14) {
     margin-left: -29px !important;
   }
