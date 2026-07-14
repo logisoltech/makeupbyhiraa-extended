@@ -69,14 +69,14 @@ const TABLET_FAN = [
 ];
 
 const MOBILE_FAN = [
-  { x: -48, rotation: -6, y: 52 },
-  { x: -34, rotation: -4, y: 32 },
-  { x: -18, rotation: -2, y: 14 },
+  { x: -52, rotation: -6, y: 18 },
+  { x: -36, rotation: -4, y: 10 },
+  { x: -20, rotation: -2, y: 4 },
   { x: -6, rotation: -1, y: 0 },
   { x: 6, rotation: 1, y: 0 },
-  { x: 18, rotation: 2, y: 14 },
-  { x: 34, rotation: 4, y: 32 },
-  { x: 48, rotation: 6, y: 52 },
+  { x: 20, rotation: 2, y: 4 },
+  { x: 36, rotation: 4, y: 10 },
+  { x: 52, rotation: 6, y: 18 },
 ];
 
 function getFanLayout() {
@@ -267,15 +267,15 @@ export default function Expertise() {
       });
 
       mm.add("(max-width: 768px)", () => {
-        // No pin / no pin-spacer — avoids the huge blank gap under Expertise.
+        // No pin / no pin-spacer — keeps section height compact on phone.
         const tl = gsap.timeline({
           defaults: { ease: "none" },
           scrollTrigger: {
             trigger: section,
-            start: "top 72%",
-            end: "+=500",
+            start: "top 75%",
+            end: "+=450",
             pin: false,
-            scrub: 0.65,
+            scrub: 0.6,
             invalidateOnRefresh: true,
           },
         });

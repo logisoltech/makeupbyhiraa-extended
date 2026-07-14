@@ -55,13 +55,6 @@ export default function HeroIntro() {
         return window.innerWidth / 2 - mediaCenter;
       };
 
-      /** Mobile: keep one in-flow wrapper; only nudge Y to viewport-center for intro. */
-      const getMobileIntroY = () => {
-        const rect = media.getBoundingClientRect();
-        const mediaCenter = rect.top + rect.height / 2;
-        return window.innerHeight / 2 - mediaCenter;
-      };
-
       const notifyIntroProgress = (progress) => {
         window.dispatchEvent(
           new CustomEvent("hero:intro-progress", {
@@ -113,20 +106,30 @@ export default function HeroIntro() {
       let introDone = false;
       let animating = false;
       let touchStartY = 0;
+      /** Frozen mobile Y delta from centered intro → top hero slot (never recompute on reverse). */
+      let mobileFinalY = 0;
 
       gsap.set(black, { opacity: 1 });
       gsap.set(theme, { opacity: 0 });
       gsap.set(vignette, { opacity: 0 });
       if (isMobile()) {
+        // One wrapper for intro + final. left/top/xPercent/yPercent set once;
+        // only `y` animates so reverse cannot snap via layout reflow.
         gsap.set(media, {
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          xPercent: -50,
+          yPercent: -50,
           x: 0,
           y: 0,
           scale: 1,
           opacity: 1,
-          clearProps: "position,left,top,width,height,maxHeight,zIndex,margin",
+          margin: 0,
         });
-        // Nudge after layout so the same wrapper is vertically centered on black.
-        gsap.set(media, { y: getMobileIntroY() });
+        // From viewport-centered (top/yPercent) up to the reserved top slot.
+        mobileFinalY =
+          media.offsetHeight / 2 + 12 - window.innerHeight / 2;
       } else {
         gsap.set(media, {
           x: getCenterOffset(),
@@ -172,9 +175,7 @@ export default function HeroIntro() {
         onReverseComplete: () => {
           introDone = false;
           animating = false;
-          if (isMobile()) {
-            gsap.set(media, { x: 0, y: getMobileIntroY() });
-          }
+          // Do NOT gsap.set() media y here — timeline already restored intro state.
           lockScroll();
           window.scrollTo(0, 0);
           notifyIntroReset();
@@ -213,24 +214,39 @@ export default function HeroIntro() {
         navbarAttached = true;
       };
 
-      // Full cinematic transition — plays once on scroll intent
-      // Mobile: same wrapper/size/mask; only ease Y from centered intro → hero slot.
-      tl.to(
-        media,
-        isMobile()
-          ? {
-              x: 0,
-              y: 0,
-              duration: 1.35,
-              ease: "power3.inOut",
-            }
-          : {
-              x: 0,
-              duration: 1.35,
-              ease: "power3.inOut",
-            },
-        0
-      );
+      // Full cinematic transition — plays once on scroll intent.
+      // Mobile fromTo locks start/end so reverse is the exact same path (no jump).
+      if (isMobile()) {
+        tl.fromTo(
+          media,
+          {
+            x: 0,
+            y: 0,
+            xPercent: -50,
+            yPercent: -50,
+          },
+          {
+            x: 0,
+            y: mobileFinalY,
+            xPercent: -50,
+            yPercent: -50,
+            duration: 1.35,
+            ease: "power3.inOut",
+            immediateRender: false,
+          },
+          0
+        );
+      } else {
+        tl.to(
+          media,
+          {
+            x: 0,
+            duration: 1.35,
+            ease: "power3.inOut",
+          },
+          0
+        );
+      }
 
       tl.to(
         theme,
@@ -400,8 +416,20 @@ export default function HeroIntro() {
       const onResize = () => {
         if (!introDone && !animating) {
           if (isMobile()) {
-            gsap.set(media, { x: 0, y: 0 });
-            gsap.set(media, { y: getMobileIntroY() });
+            mobileFinalY =
+              media.offsetHeight / 2 + 12 - window.innerHeight / 2;
+            gsap.set(media, {
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              xPercent: -50,
+              yPercent: -50,
+              x: 0,
+              y: 0,
+            });
+            // Refresh fromTo end value for next play
+            const mediaTween = tl.getTweensOf(media)[0];
+            if (mediaTween) mediaTween.vars.y = mobileFinalY;
           } else {
             gsap.set(media, { x: getCenterOffset(), y: 0 });
           }
