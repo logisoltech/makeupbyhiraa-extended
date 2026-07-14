@@ -169,27 +169,120 @@
   .stage {
     position: relative;
     width: 92vw;
-    max-width: 92vw;
-    height: 460px;
+    max-width: 360px;
+    height: 420px;
     margin: 28px auto 0;
     overflow: visible;
     transform: none;
   }
 
   .card {
-    width: 68px;
-    height: 86px;
-    border-radius: 14px;
+    width: 62px;
+    height: 78px;
+    border-radius: 16px;
+    z-index: 5;
+    margin-left: 0 !important;
   }
 
   .cardCenteredX {
-    margin-left: -34px;
+    margin-left: 0;
   }
 
   .centerCard {
-    width: 165px;
-    height: 210px;
+    width: 145px;
+    height: 190px;
+    left: 50%;
+    top: 48%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
     border-radius: 24px;
+  }
+
+  /* Mobile Figma-style wall — overrides inline desktop coords only */
+  .card:nth-child(1) {
+    left: 4% !important;
+    right: auto !important;
+    top: 5% !important;
+  }
+
+  .card:nth-child(2) {
+    left: 25% !important;
+    right: auto !important;
+    top: 2% !important;
+  }
+
+  .card:nth-child(3) {
+    left: 50% !important;
+    right: auto !important;
+    top: 1% !important;
+    margin-left: -31px !important;
+  }
+
+  .card:nth-child(4) {
+    left: auto !important;
+    right: 25% !important;
+    top: 2% !important;
+  }
+
+  .card:nth-child(5) {
+    left: auto !important;
+    right: 4% !important;
+    top: 5% !important;
+  }
+
+  .card:nth-child(6) {
+    left: 5% !important;
+    right: auto !important;
+    top: 30% !important;
+  }
+
+  .card:nth-child(7) {
+    left: 16% !important;
+    right: auto !important;
+    top: 34% !important;
+  }
+
+  .card:nth-child(8) {
+    left: auto !important;
+    right: 16% !important;
+    top: 34% !important;
+  }
+
+  .card:nth-child(9) {
+    left: auto !important;
+    right: 5% !important;
+    top: 30% !important;
+  }
+
+  .card:nth-child(10) {
+    left: 11% !important;
+    right: auto !important;
+    top: 62% !important;
+  }
+
+  .card:nth-child(11) {
+    left: 32% !important;
+    right: auto !important;
+    top: 70% !important;
+  }
+
+  .card:nth-child(12) {
+    left: auto !important;
+    right: 32% !important;
+    top: 70% !important;
+  }
+
+  .card:nth-child(13) {
+    left: auto !important;
+    right: 11% !important;
+    top: 62% !important;
+  }
+
+  .card:nth-child(14) {
+    left: 50% !important;
+    right: auto !important;
+    top: 79% !important;
+    margin-left: -31px !important;
   }
 }
 
@@ -204,25 +297,26 @@
 
   .stage {
     width: 92vw;
-    height: 440px;
+    max-width: 360px;
+    height: 420px;
     margin: 24px auto 0;
-    transform: none;
   }
 
   .card {
-    width: 62px;
-    height: 80px;
-    border-radius: 13px;
+    width: 58px;
+    height: 74px;
+    border-radius: 16px;
   }
 
-  .cardCenteredX {
-    margin-left: -31px;
+  .card:nth-child(3),
+  .card:nth-child(14) {
+    margin-left: -29px !important;
   }
 
   .centerCard {
-    width: 155px;
-    height: 198px;
-    border-radius: 22px;
+    width: 145px;
+    height: 190px;
+    border-radius: 24px;
   }
 }
 
