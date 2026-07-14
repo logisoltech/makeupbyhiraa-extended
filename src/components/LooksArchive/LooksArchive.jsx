@@ -11,11 +11,9 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const TITLE_WORDS = ["Looks", "That", "Speak", "Before", "Words."];
 
-const FEATURED_IMAGE =
-  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1000&q=85";
+const FEATURED_IMAGE = "/r1.jpg";
 
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=600&q=82";
+const FALLBACK_IMAGE = "/r2.jpg";
 
 const CARDS = [
   {
@@ -23,104 +21,91 @@ const CARDS = [
     left: "6%",
     top: "7%",
     rotate: -2,
-    image:
-      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=600&q=82",
+    image: "/r2.jpg",
   },
   {
     id: "c2",
     left: "6%",
     top: "36%",
     rotate: 0,
-    image:
-      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=82",
+    image: "/r3.jpg",
   },
   {
     id: "c3",
     left: "11%",
     top: "65%",
     rotate: 1,
-    image:
-      "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=600&q=82",
+    image: "/r4.jpg",
   },
   {
     id: "c4",
     left: "24%",
     top: "4%",
     rotate: 0,
-    image:
-      "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=600&q=82",
+    image: "/r5.jpg",
   },
   {
     id: "c5",
     left: "24%",
     top: "39%",
     rotate: -1,
-    image:
-      "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=82",
+    image: "/r6.jpg",
   },
   {
     id: "c6",
     left: "27%",
     top: "70%",
     rotate: 2,
-    image:
-      "https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=600&q=82",
+    image: "/r7.jpg",
   },
   {
     id: "c7",
     left: "calc(41% + 30px)",
     top: "5%",
     rotate: 0,
-    image:
-      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=82",
+    image: "/r8.jpg",
   },
   {
     id: "c8",
     right: "24%",
     top: "4%",
     rotate: 0,
-    image:
-      "https://images.unsplash.com/photo-1595475038665-8de2a4b727d7?auto=format&fit=crop&w=600&q=82",
+    image: "/r9.jpg",
   },
   {
     id: "c9",
     right: "24%",
     top: "39%",
     rotate: 1,
-    image:
-      "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=600&q=82",
+    image: "/r10.jpg",
   },
   {
     id: "c10",
     right: "27%",
     top: "70%",
     rotate: -1,
-    image:
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=600&q=82",
+    image: "/r11.jpg",
   },
   {
     id: "c11",
     right: "6%",
     top: "7%",
     rotate: 2,
-    image:
-      "https://images.unsplash.com/photo-1606170033648-5d55a83be8e5?auto=format&fit=crop&w=600&q=82",
+    image: "/r12.jpg",
   },
   {
     id: "c12",
     right: "6%",
     top: "36%",
     rotate: 0,
-    image:
-      "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=600&q=82",
+    image: "/r13.jpg",
   },
   {
     id: "c13",
     right: "11%",
     top: "65%",
     rotate: -2,
-    image:
-      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=600&q=82",
+    image: "/r14.jpg",
   },
   {
     id: "c14",
@@ -128,8 +113,7 @@ const CARDS = [
     top: "75%",
     centeredX: true,
     rotate: 0,
-    image:
-      "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=600&q=82",
+    image: "/r15.jpg",
   },
 ];
 
