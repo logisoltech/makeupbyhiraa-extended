@@ -128,9 +128,9 @@ export default function Services() {
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=3000",
+          end: "+=1300",
           pin: true,
-          scrub: 1,
+          scrub: 0.7,
           anticipatePin: 1,
           invalidateOnRefresh: true,
         },
