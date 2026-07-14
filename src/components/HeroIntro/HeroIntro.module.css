@@ -303,14 +303,108 @@
   }
 }
 
+@media (max-width: 768px) {
+  .hero {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .layout {
+    width: 100%;
+    max-width: 100vw;
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    padding: 0.85rem 4vw 1.35rem;
+    overflow-x: hidden;
+    align-content: start;
+  }
+
+  /* Same wrapper for intro + final — no size/position mode switch */
+  .media {
+    order: -1;
+    position: relative;
+    width: 86vw;
+    max-width: 86vw;
+    height: min(52vh, 52dvh);
+    max-height: 52vh;
+    margin: 0 auto;
+    overflow: visible;
+  }
+
+  .portrait {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .image {
+    object-fit: contain !important;
+    object-position: center bottom !important;
+    /* Bottom fade from the start (intro + final) — no late mask swap */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 70%,
+      transparent 100%
+    ) !important;
+    mask-image: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 70%,
+      transparent 100%
+    ) !important;
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+
+  .copy {
+    width: 100%;
+    max-width: 90vw;
+    margin: 0 auto;
+    align-items: center;
+    text-align: center;
+    padding-top: 20px;
+  }
+
+  .title {
+    font-size: clamp(42px, 12vw, 62px);
+  }
+
+  .description {
+    max-width: 90vw;
+    font-size: 0.95rem;
+  }
+
+  .ctas {
+    width: 100%;
+    max-width: 90vw;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .glassBtn {
+    min-height: 2.75rem;
+    padding: 0.75rem 1.15rem;
+    font-size: 0.86rem;
+  }
+}
+
 @media (max-width: 480px) {
   .media {
-    height: min(62vh, 62dvh);
+    height: min(50vh, 50dvh);
+    max-height: 50vh;
   }
 
   .primary,
   .secondary {
-    width: 100%;
+    width: auto;
+    flex: 1 1 auto;
+    min-width: min(100%, 9.5rem);
   }
 
   .ctas {

@@ -44,11 +44,22 @@ export default function HeroIntro() {
 
       const textBlocks = [label, ...titleLines, desc, ctas].filter(Boolean);
 
+      const isMobile = () =>
+        window.matchMedia("(max-width: 768px)").matches;
+
       const getCenterOffset = () => {
-        if (window.matchMedia("(max-width: 900px)").matches) return 0;
+        if (isMobile() || window.matchMedia("(max-width: 900px)").matches)
+          return 0;
         const mediaRect = media.getBoundingClientRect();
         const mediaCenter = mediaRect.left + mediaRect.width / 2;
         return window.innerWidth / 2 - mediaCenter;
+      };
+
+      /** Mobile: keep one in-flow wrapper; only nudge Y to viewport-center for intro. */
+      const getMobileIntroY = () => {
+        const rect = media.getBoundingClientRect();
+        const mediaCenter = rect.top + rect.height / 2;
+        return window.innerHeight / 2 - mediaCenter;
       };
 
       const notifyIntroProgress = (progress) => {
@@ -106,11 +117,24 @@ export default function HeroIntro() {
       gsap.set(black, { opacity: 1 });
       gsap.set(theme, { opacity: 0 });
       gsap.set(vignette, { opacity: 0 });
-      gsap.set(media, {
-        x: getCenterOffset(),
-        scale: 1,
-        opacity: 1,
-      });
+      if (isMobile()) {
+        gsap.set(media, {
+          x: 0,
+          y: 0,
+          scale: 1,
+          opacity: 1,
+          clearProps: "position,left,top,width,height,maxHeight,zIndex,margin",
+        });
+        // Nudge after layout so the same wrapper is vertically centered on black.
+        gsap.set(media, { y: getMobileIntroY() });
+      } else {
+        gsap.set(media, {
+          x: getCenterOffset(),
+          y: 0,
+          scale: 1,
+          opacity: 1,
+        });
+      }
       gsap.set(textBlocks, {
         opacity: 0,
         y: 36,
@@ -148,6 +172,9 @@ export default function HeroIntro() {
         onReverseComplete: () => {
           introDone = false;
           animating = false;
+          if (isMobile()) {
+            gsap.set(media, { x: 0, y: getMobileIntroY() });
+          }
           lockScroll();
           window.scrollTo(0, 0);
           notifyIntroReset();
@@ -187,24 +214,33 @@ export default function HeroIntro() {
       };
 
       // Full cinematic transition — plays once on scroll intent
+      // Mobile: same wrapper/size/mask; only ease Y from centered intro → hero slot.
       tl.to(
         media,
+        isMobile()
+          ? {
+              x: 0,
+              y: 0,
+              duration: 1.35,
+              ease: "power3.inOut",
+            }
+          : {
+              x: 0,
+              duration: 1.35,
+              ease: "power3.inOut",
+            },
+        0
+      );
+
+      tl.to(
+        theme,
         {
-          x: 0,
-          duration: 1.35,
-          ease: "power3.inOut",
+          opacity: 1,
+          duration: 1.25,
+          ease: "power2.inOut",
         },
         0
       )
-        .to(
-          theme,
-          {
-            opacity: 1,
-            duration: 1.25,
-            ease: "power2.inOut",
-          },
-          0
-        )
         .to(
           black,
           {
@@ -363,7 +399,12 @@ export default function HeroIntro() {
 
       const onResize = () => {
         if (!introDone && !animating) {
-          gsap.set(media, { x: getCenterOffset() });
+          if (isMobile()) {
+            gsap.set(media, { x: 0, y: 0 });
+            gsap.set(media, { y: getMobileIntroY() });
+          } else {
+            gsap.set(media, { x: getCenterOffset(), y: 0 });
+          }
         }
         ScrollTrigger.refresh();
       };

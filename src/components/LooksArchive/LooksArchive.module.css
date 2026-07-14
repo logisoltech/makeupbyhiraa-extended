@@ -152,9 +152,50 @@
   }
 }
 
+@media (max-width: 768px) {
+  .section {
+    width: 100%;
+    max-width: 100vw;
+    min-height: auto;
+    overflow-x: hidden;
+    padding: 2rem 0 2.5rem;
+  }
+
+  .header {
+    width: 92vw;
+    max-width: 100%;
+  }
+
+  .stage {
+    position: relative;
+    width: 92vw;
+    max-width: 92vw;
+    height: 460px;
+    margin: 28px auto 0;
+    overflow: visible;
+    transform: none;
+  }
+
+  .card {
+    width: 68px;
+    height: 86px;
+    border-radius: 14px;
+  }
+
+  .cardCenteredX {
+    margin-left: -34px;
+  }
+
+  .centerCard {
+    width: 165px;
+    height: 210px;
+    border-radius: 24px;
+  }
+}
+
 @media (max-width: 640px) {
   .section {
-    padding: 2.25rem 0 2.75rem;
+    padding: 1.75rem 0 2.25rem;
   }
 
   .header {
@@ -162,25 +203,26 @@
   }
 
   .stage {
-    width: 96vw;
-    height: 420px;
-    margin-top: 20px;
+    width: 92vw;
+    height: 440px;
+    margin: 24px auto 0;
+    transform: none;
   }
 
   .card {
-    width: 64px;
-    height: 82px;
-    border-radius: 14px;
+    width: 62px;
+    height: 80px;
+    border-radius: 13px;
   }
 
   .cardCenteredX {
-    margin-left: -32px;
+    margin-left: -31px;
   }
 
   .centerCard {
-    width: 180px;
-    height: 220px;
-    border-radius: 24px;
+    width: 155px;
+    height: 198px;
+    border-radius: 22px;
   }
 }
 
