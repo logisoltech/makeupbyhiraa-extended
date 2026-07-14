@@ -69,7 +69,7 @@
   border: 1px solid rgba(58, 31, 35, 0.08);
   background: #f6eee9;
   opacity: 0;
-  will-change: transform, opacity;
+  will-change: transform, opacity, filter;
 }
 
 .card {
@@ -78,6 +78,28 @@
   border-radius: 26px;
   z-index: 5;
   box-shadow: 0 18px 45px rgba(58, 31, 35, 0.1);
+  cursor: pointer;
+}
+
+.hoverClone {
+  position: fixed;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(58, 31, 35, 0.08);
+  background: #f6eee9;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: left, top, width, height, border-radius, box-shadow;
+}
+
+.hoverCloneImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  pointer-events: none;
 }
 
 .cardCenteredX {
@@ -102,6 +124,8 @@
   object-fit: cover;
   object-position: center center;
   pointer-events: none;
+  transform-origin: center center;
+  will-change: transform;
 }
 
 @media (max-width: 1024px) {
