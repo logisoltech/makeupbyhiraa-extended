@@ -12,43 +12,36 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 const CARDS = [
   {
     title: "Bridal Makeup",
-    image:
-      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80",
+    image: "/p4.jpg",
   },
   {
     title: "Hair Styling",
-    image:
-      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=900&q=80",
+    image: "/p2.jpg",
   },
   {
     title: "Soft Glam",
-    image:
-      "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=900&q=80",
+    image: "/p3.jpg",
   },
   {
     title: "Special Occasions",
-    image:
-      "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=900&q=80",
+    image: "/p1.jpg",
   },
   {
     title: "Formals",
-    image:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
+    image: "/p5.jpg",
   },
   {
     title: "Editorial Beauty",
-    image:
-      "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80",
+    image: "/p6.jpg",
   },
   {
     title: "Party Glam",
-    image:
-      "https://images.unsplash.com/photo-1523264766116-1e09b3145b84?auto=format&fit=crop&w=900&q=80",
+    image: "/p7.png",
   },
   {
     title: "Final Touchups",
     image:
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=80",
+      "/p8.jpg",
   },
 ];
 
