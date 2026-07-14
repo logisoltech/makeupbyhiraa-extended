@@ -5,11 +5,13 @@ import Image from "next/image";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useBookingModal } from "@/components/BookingModal/BookingModalContext";
 import styles from "./HeroIntro.module.css";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 export default function HeroIntro() {
+  const { openBooking } = useBookingModal();
   const sectionRef = useRef(null);
   const layoutRef = useRef(null);
   const blackRef = useRef(null);
@@ -49,6 +51,14 @@ export default function HeroIntro() {
         return window.innerWidth / 2 - mediaCenter;
       };
 
+      const notifyIntroComplete = () => {
+        window.dispatchEvent(new CustomEvent("hero:intro-complete"));
+      };
+
+      const notifyIntroReset = () => {
+        window.dispatchEvent(new CustomEvent("hero:intro-reset"));
+      };
+
       if (prefersReducedMotion) {
         gsap.set(black, { opacity: 0 });
         gsap.set([theme, vignette], { opacity: 1 });
@@ -59,6 +69,7 @@ export default function HeroIntro() {
           y: 0,
           clipPath: "none",
         });
+        notifyIntroComplete();
         return;
       }
 
@@ -103,12 +114,14 @@ export default function HeroIntro() {
           animating = false;
           unlockScroll();
           ScrollTrigger.refresh();
+          notifyIntroComplete();
         },
         onReverseComplete: () => {
           introDone = false;
           animating = false;
           lockScroll();
           window.scrollTo(0, 0);
+          notifyIntroReset();
         },
       });
 
@@ -352,12 +365,16 @@ export default function HeroIntro() {
           </p>
 
           <div ref={ctasRef} className={styles.ctas}>
-            <a className={`${styles.glassBtn} ${styles.primary}`} href="#book">
+            <button
+              type="button"
+              className={`${styles.glassBtn} ${styles.primary}`}
+              onClick={openBooking}
+            >
               <span>Book Your Look</span>
               <span className={styles.btnArrow} aria-hidden="true">
                 →
               </span>
-            </a>
+            </button>
             <a
               className={`${styles.glassBtn} ${styles.secondary}`}
               href="#portfolio"

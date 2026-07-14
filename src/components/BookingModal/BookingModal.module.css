@@ -1,0 +1,294 @@
+.root {
+  --ink: #3a1f23;
+  --blush: #fff1f5;
+  --cream: #f6eee9;
+  --rose: #fadde1;
+  --peach: #fcd5ce;
+  --mauve: #eadbdd;
+
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(58, 31, 35, 0.22);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: none;
+  cursor: pointer;
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  width: min(680px, 92vw);
+  max-height: 90vh;
+  overflow: auto;
+  padding: clamp(1.6rem, 3vw, 2.35rem);
+  border-radius: 34px;
+  background: rgba(255, 241, 245, 0.72);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  box-shadow: 0 30px 90px rgba(58, 31, 35, 0.18);
+  color: var(--ink);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(58, 31, 35, 0.25) transparent;
+}
+
+.close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.45rem;
+  height: 2.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--ink);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(58, 31, 35, 0.08);
+  transition:
+    background 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.close:hover {
+  background: rgba(250, 221, 225, 0.7);
+  transform: rotate(90deg);
+  box-shadow: 0 10px 26px rgba(58, 31, 35, 0.12);
+}
+
+.label {
+  margin: 0 2.5rem 0.35rem 0;
+  font-family: var(--font-script), cursive;
+  font-size: clamp(1.35rem, 2.4vw, 1.7rem);
+  color: color-mix(in srgb, var(--ink) 82%, #c47a88);
+}
+
+.title {
+  margin: 0 2.5rem 0.65rem 0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.55rem, 3vw, 2.05rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.copy {
+  margin: 0 0 1.35rem;
+  max-width: 36ch;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem 0.9rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.fieldLabel {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--ink) 78%, transparent);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.38);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    background 0.3s ease;
+}
+
+.input,
+.select {
+  min-height: 3rem;
+  padding: 0.75rem 1rem;
+}
+
+.textarea {
+  min-height: 7rem;
+  padding: 0.9rem 1rem;
+  resize: vertical;
+}
+
+.select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(58, 31, 35, 0.55) 50%),
+    linear-gradient(135deg, rgba(58, 31, 35, 0.55) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 55%,
+    calc(100% - 12px) 55%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 2.4rem;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: rgba(58, 31, 35, 0.42);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: rgba(252, 213, 206, 0.95);
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 0 0 3px rgba(250, 221, 225, 0.55);
+}
+
+.submit {
+  grid-column: 1 / -1;
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: 3.15rem;
+  margin-top: 0.35rem;
+  padding: 0.9rem 1.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(58, 31, 35, 0.22);
+  background: rgba(255, 241, 245, 0.55);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 10px 28px rgba(58, 31, 35, 0.1);
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.submit:hover {
+  background: rgba(250, 221, 225, 0.72);
+  border-color: rgba(58, 31, 35, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 12px 32px rgba(58, 31, 35, 0.12);
+}
+
+.submitArrow {
+  display: inline-flex;
+  transition: transform 0.35s ease;
+}
+
+.submit:hover .submitArrow {
+  transform: translateX(5px);
+}
+
+.success {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 0 0.25rem;
+}
+
+.successTitle {
+  margin: 0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.successCopy {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+}
+
+@media (max-width: 640px) {
+  .root {
+    padding: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .card {
+    width: 92vw;
+    max-height: 90vh;
+    padding: 1.35rem 1.15rem 1.25rem;
+    border-radius: 28px;
+  }
+
+  .form {
+    grid-template-columns: 1fr;
+  }
+
+  .close {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .close,
+  .submit,
+  .submitArrow,
+  .input,
+  .select,
+  .textarea {
+    transition: none;
+  }
+
+  .close:hover {
+    transform: none;
+  }
+}

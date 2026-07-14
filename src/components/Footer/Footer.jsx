@@ -4,6 +4,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useBookingModal } from "@/components/BookingModal/BookingModalContext";
 import styles from "./Footer.module.css";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -94,6 +95,7 @@ function EmailIcon() {
 }
 
 export default function Footer() {
+  const { openBooking } = useBookingModal();
   const footerRef = useRef(null);
   const labelRef = useRef(null);
   const wordRefs = useRef([]);
@@ -283,10 +285,14 @@ export default function Footer() {
             By Hiraa in Melbourne.
           </p>
           <div ref={ctasRef} className={styles.ctas}>
-            <a href="#contact" className={`${styles.glassBtn} ${styles.primary}`}>
+            <button
+              type="button"
+              className={`${styles.glassBtn} ${styles.primary}`}
+              onClick={openBooking}
+            >
               Book Appointment
               <ArrowIcon />
-            </a>
+            </button>
             <a
               href="#portfolio"
               className={`${styles.glassBtn} ${styles.secondary}`}

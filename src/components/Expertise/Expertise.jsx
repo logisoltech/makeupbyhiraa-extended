@@ -286,12 +286,11 @@ export default function Expertise() {
             >
               <Image
                 src={card.image}
-                alt={card.title}
+                alt=""
                 fill
                 sizes="(max-width: 640px) 180px, (max-width: 1024px) 220px, 250px"
                 className={styles.cardImage}
               />
-              <div className={styles.cardFade} aria-hidden="true" />
             </article>
           ))}
         </div>

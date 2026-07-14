@@ -11,6 +11,7 @@ html {
   height: 100%;
   background: var(--page-canvas);
   background-attachment: fixed;
+  scroll-padding-top: 5.5rem;
 }
 
 html,
