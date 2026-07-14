@@ -223,6 +223,7 @@
   color: #2a1518;
 }
 
+/* Desktop/default: image lives in the RIGHT grid column — GSAP only nudges x */
 .media {
   position: relative;
   display: flex;
@@ -276,6 +277,9 @@
 
   .media {
     order: -1;
+    position: relative;
+    left: auto;
+    top: auto;
     height: min(68vh, 68dvh);
     max-width: min(92vw, 520px);
     margin: 0 auto;
@@ -303,13 +307,13 @@
   }
 }
 
+/* Phone: relative flow only — no absolute/fixed CSS fighting GSAP */
 @media (max-width: 768px) {
   .hero {
     width: 100%;
     max-width: 100vw;
     overflow-x: hidden;
-    /* Clear fixed mobile navbar so image is not covered */
-    padding-top: calc(72px + env(safe-area-inset-top, 0px));
+    padding-top: calc(52px + env(safe-area-inset-top, 0px));
   }
 
   .layout {
@@ -317,40 +321,36 @@
     width: 100%;
     max-width: 100vw;
     grid-template-columns: 1fr;
-    gap: 0.25rem;
-    /* Reserve top slot so absolute media doesn't collapse copy */
-    padding: min(52vh, 52dvh) 4vw 1.35rem;
+    gap: 0.2rem;
+    padding: 0.5rem 4vw 1.25rem;
     overflow-x: hidden;
     align-content: start;
+    min-height: calc(100vh - 52px);
+    min-height: calc(100dvh - 52px);
   }
 
-  /* Same wrapper for intro + final — GSAP owns left/top/xPercent/yPercent/y */
   .media {
     order: -1;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 86vw;
-    max-width: 86vw;
-    height: min(52vh, 52dvh);
-    max-height: 52vh;
-    margin: 8px 0 0;
+    position: relative;
+    left: auto;
+    top: auto;
+    width: min(82vw, 320px);
+    max-width: min(82vw, 320px);
+    height: min(48vh, 48dvh);
+    max-height: 48vh;
+    margin: 0 auto;
     overflow: visible;
     z-index: 4;
-    will-change: transform;
   }
 
   .portrait {
-    position: relative;
     width: 100%;
     height: 100%;
-    overflow: visible;
   }
 
   .image {
     object-fit: contain !important;
     object-position: center bottom !important;
-    /* Bottom fade from the start (intro + final) */
     -webkit-mask-image: linear-gradient(
       to bottom,
       #000 0%,
@@ -363,10 +363,6 @@
       #000 68%,
       transparent 100%
     ) !important;
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
   }
 
   .copy {
@@ -377,11 +373,11 @@
     margin: 0 auto;
     align-items: center;
     text-align: center;
-    padding-top: 12px;
+    padding-top: 10px;
   }
 
   .title {
-    font-size: clamp(42px, 12vw, 62px);
+    font-size: clamp(40px, 11.5vw, 58px);
   }
 
   .description {
@@ -406,8 +402,8 @@
 
 @media (max-width: 480px) {
   .media {
-    height: min(50vh, 50dvh);
-    max-height: 50vh;
+    height: min(46vh, 46dvh);
+    max-height: 46vh;
   }
 
   .primary,

@@ -44,17 +44,6 @@ export default function HeroIntro() {
 
       const textBlocks = [label, ...titleLines, desc, ctas].filter(Boolean);
 
-      const isMobile = () =>
-        window.matchMedia("(max-width: 768px)").matches;
-
-      const getCenterOffset = () => {
-        if (isMobile() || window.matchMedia("(max-width: 900px)").matches)
-          return 0;
-        const mediaRect = media.getBoundingClientRect();
-        const mediaCenter = mediaRect.left + mediaRect.width / 2;
-        return window.innerWidth / 2 - mediaCenter;
-      };
-
       const notifyIntroProgress = (progress) => {
         window.dispatchEvent(
           new CustomEvent("hero:intro-progress", {
@@ -103,51 +92,10 @@ export default function HeroIntro() {
         return;
       }
 
-      let introDone = false;
-      let animating = false;
-      let touchStartY = 0;
-      /** Frozen mobile Y delta from centered intro → top hero slot (never recompute on reverse). */
-      let mobileFinalY = 0;
-
-      gsap.set(black, { opacity: 1 });
-      gsap.set(theme, { opacity: 0 });
-      gsap.set(vignette, { opacity: 0 });
-      if (isMobile()) {
-        // One wrapper for intro + final. left/top/xPercent/yPercent set once;
-        // only `y` animates so reverse cannot snap via layout reflow.
-        gsap.set(media, {
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          xPercent: -50,
-          yPercent: -50,
-          x: 0,
-          y: 0,
-          scale: 1,
-          opacity: 1,
-          margin: 0,
-        });
-        // From viewport-centered (top/yPercent) up to the reserved top slot.
-        mobileFinalY =
-          media.offsetHeight / 2 + 12 - window.innerHeight / 2;
-      } else {
-        gsap.set(media, {
-          x: getCenterOffset(),
-          y: 0,
-          scale: 1,
-          opacity: 1,
-        });
-      }
-      gsap.set(textBlocks, {
-        opacity: 0,
-        y: 36,
-        clipPath: "inset(100% 0 0 0)",
+      // Kill any prior hero intro triggers before recreating
+      ScrollTrigger.getAll().forEach((t) => {
+        if (t.vars?.id === "heroIntro") t.kill();
       });
-      gsap.set(layout, { opacity: 1, y: 0, filter: "blur(0px)" });
-
-      // Lock page scroll until the one-scroll intro finishes
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
 
       const unlockScroll = () => {
         document.documentElement.style.overflow = "";
@@ -159,314 +107,542 @@ export default function HeroIntro() {
         document.body.style.overflow = "hidden";
       };
 
-      const tl = gsap.timeline({
-        paused: true,
-        defaults: { ease: "power3.out" },
-        onUpdate: () => {
-          notifyIntroProgress(tl.progress());
-        },
-        onComplete: () => {
-          introDone = true;
-          animating = false;
-          unlockScroll();
-          ScrollTrigger.refresh();
-          notifyIntroComplete();
-        },
-        onReverseComplete: () => {
-          introDone = false;
-          animating = false;
-          // Do NOT gsap.set() media y here — timeline already restored intro state.
-          lockScroll();
-          window.scrollTo(0, 0);
-          notifyIntroReset();
-        },
-      });
+      lockScroll();
 
-      let navbarAttached = false;
+      const mm = gsap.matchMedia();
 
-      const attachNavbarToTimeline = () => {
-        if (navbarAttached) return;
-        const navbar = document.querySelector("[data-main-navbar]");
-        if (!navbar) return;
+      mm.add("(min-width: 769px)", () => {
+        let introDone = false;
+        let animating = false;
+        let touchStartY = 0;
+        let navbarAttached = false;
 
-        gsap.set(navbar, {
-          xPercent: -50,
-          opacity: 0,
-          y: -14,
-          filter: "blur(8px)",
-          pointerEvents: "none",
-          visibility: "visible",
+        // Desktop: keep image in the RIGHT grid column; only animate x.
+        gsap.set(media, {
+          clearProps: "position,left,top,xPercent,yPercent,margin",
+          x: 0,
+          y: 0,
+          scale: 1,
+          opacity: 1,
         });
 
-        tl.to(
-          navbar,
-          {
-            xPercent: -50,
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)",
-            pointerEvents: "auto",
-            duration: 0.7,
-            ease: "power3.out",
-          },
-          "heroReveal"
-        );
-        navbarAttached = true;
-      };
+        const getCenterOffset = () => {
+          const mediaRect = media.getBoundingClientRect();
+          const mediaCenter = mediaRect.left + mediaRect.width / 2;
+          return window.innerWidth / 2 - mediaCenter;
+        };
 
-      // Full cinematic transition — plays once on scroll intent.
-      // Mobile fromTo locks start/end so reverse is the exact same path (no jump).
-      if (isMobile()) {
+        const centerX = getCenterOffset();
+
+        gsap.set(black, { opacity: 1 });
+        gsap.set(theme, { opacity: 0 });
+        gsap.set(vignette, { opacity: 0 });
+        gsap.set(media, { x: centerX, y: 0, scale: 1, opacity: 1 });
+        gsap.set(textBlocks, {
+          opacity: 0,
+          y: 36,
+          clipPath: "inset(100% 0 0 0)",
+        });
+        gsap.set(layout, { opacity: 1, y: 0, filter: "blur(0px)" });
+
+        const tl = gsap.timeline({
+          paused: true,
+          defaults: { ease: "power3.out" },
+          onUpdate: () => notifyIntroProgress(tl.progress()),
+          onComplete: () => {
+            introDone = true;
+            animating = false;
+            unlockScroll();
+            ScrollTrigger.refresh();
+            notifyIntroComplete();
+          },
+          onReverseComplete: () => {
+            introDone = false;
+            animating = false;
+            lockScroll();
+            window.scrollTo(0, 0);
+            notifyIntroReset();
+          },
+        });
+
+        const attachNavbar = () => {
+          if (navbarAttached) return;
+          const navbar = document.querySelector("[data-main-navbar]");
+          if (!navbar) return;
+          gsap.set(navbar, {
+            xPercent: -50,
+            opacity: 0,
+            y: -14,
+            filter: "blur(8px)",
+            pointerEvents: "none",
+            visibility: "visible",
+          });
+          tl.to(
+            navbar,
+            {
+              xPercent: -50,
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              pointerEvents: "auto",
+              duration: 0.7,
+              ease: "power3.out",
+            },
+            "heroReveal"
+          );
+          navbarAttached = true;
+        };
+
+        // Center → right column (x: 0). Same path reverse = no jump.
         tl.fromTo(
           media,
+          { x: centerX, y: 0, scale: 1 },
           {
             x: 0,
             y: 0,
-            xPercent: -50,
-            yPercent: -50,
-          },
-          {
-            x: 0,
-            y: mobileFinalY,
-            xPercent: -50,
-            yPercent: -50,
+            scale: 1,
             duration: 1.35,
             ease: "power3.inOut",
             immediateRender: false,
           },
           0
-        );
-      } else {
-        tl.to(
-          media,
-          {
-            x: 0,
-            duration: 1.35,
-            ease: "power3.inOut",
-          },
-          0
-        );
-      }
-
-      tl.to(
-        theme,
-        {
-          opacity: 1,
-          duration: 1.25,
-          ease: "power2.inOut",
-        },
-        0
-      )
-        .to(
-          black,
-          {
-            opacity: 0,
-            duration: 1.25,
-            ease: "power2.inOut",
-          },
-          0
         )
-        .to(
-          vignette,
-          {
-            opacity: 1,
-            duration: 1.1,
-            ease: "power2.out",
-          },
-          0.1
-        )
-        .addLabel("heroReveal", 0.55)
-        .to(
-          [label, ...titleLines],
-          {
-            opacity: 1,
-            y: 0,
-            clipPath: "inset(0% 0 0 0)",
-            duration: 0.85,
-            stagger: 0.09,
-            ease: "power3.out",
-          },
-          "heroReveal"
-        )
-        .to(
-          desc,
-          {
-            opacity: 1,
-            y: 0,
-            clipPath: "inset(0% 0 0 0)",
-            duration: 0.7,
-            ease: "power3.out",
-          },
-          0.9
-        )
-        .to(
-          ctas,
-          {
-            opacity: 1,
-            y: 0,
-            clipPath: "inset(0% 0 0 0)",
-            duration: 0.65,
-            ease: "power3.out",
-          },
-          1.05
-        );
-
-      attachNavbarToTimeline();
-      requestAnimationFrame(attachNavbarToTimeline);
-
-      const playIntro = () => {
-        if (introDone || animating) return;
-        attachNavbarToTimeline();
-        animating = true;
-        tl.play(0);
-      };
-
-      const reverseIntro = () => {
-        if (!introDone || animating) return;
-        if (window.scrollY > 2) return;
-        animating = true;
-        lockScroll();
-        // Hide navbar before black intro becomes visible again.
-        notifyIntroReset();
-        tl.reverse();
-      };
-
-      const isBookingModalOpen = () =>
-        document.body.dataset.bookingLock === "true";
-
-      const onWheel = (event) => {
-        if (isBookingModalOpen()) return;
-
-        if (animating) {
-          event.preventDefault();
-          return;
-        }
-
-        if (!introDone) {
-          event.preventDefault();
-          if (event.deltaY > 6) playIntro();
-          return;
-        }
-
-        if (event.deltaY < -6 && window.scrollY <= 2) {
-          event.preventDefault();
-          reverseIntro();
-        }
-      };
-
-      const onKeyDown = (event) => {
-        if (isBookingModalOpen()) return;
-
-        const downKeys = ["ArrowDown", "PageDown", " ", "Spacebar"];
-        const upKeys = ["ArrowUp", "PageUp"];
-
-        if (animating) {
-          event.preventDefault();
-          return;
-        }
-
-        if (!introDone && downKeys.includes(event.key)) {
-          event.preventDefault();
-          playIntro();
-          return;
-        }
-
-        if (
-          introDone &&
-          upKeys.includes(event.key) &&
-          window.scrollY <= 2
-        ) {
-          event.preventDefault();
-          reverseIntro();
-        }
-      };
-
-      const onTouchStart = (event) => {
-        if (isBookingModalOpen()) return;
-        touchStartY = event.touches[0].clientY;
-      };
-
-      const onTouchMove = (event) => {
-        if (isBookingModalOpen()) return;
-
-        const delta = touchStartY - event.touches[0].clientY;
-
-        if (animating) {
-          event.preventDefault();
-          return;
-        }
-
-        if (!introDone) {
-          event.preventDefault();
-          if (delta > 28) playIntro();
-          return;
-        }
-
-        if (introDone && window.scrollY <= 2 && delta < -28) {
-          event.preventDefault();
-          reverseIntro();
-        }
-      };
-
-      window.addEventListener("wheel", onWheel, { passive: false });
-      window.addEventListener("keydown", onKeyDown);
-      window.addEventListener("touchstart", onTouchStart, { passive: true });
-      window.addEventListener("touchmove", onTouchMove, { passive: false });
-
-      const onResize = () => {
-        if (!introDone && !animating) {
-          if (isMobile()) {
-            mobileFinalY =
-              media.offsetHeight / 2 + 12 - window.innerHeight / 2;
-            gsap.set(media, {
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              xPercent: -50,
-              yPercent: -50,
-              x: 0,
+          .to(theme, { opacity: 1, duration: 1.25, ease: "power2.inOut" }, 0)
+          .to(black, { opacity: 0, duration: 1.25, ease: "power2.inOut" }, 0)
+          .to(
+            vignette,
+            { opacity: 1, duration: 1.1, ease: "power2.out" },
+            0.1
+          )
+          .addLabel("heroReveal", 0.55)
+          .to(
+            [label, ...titleLines],
+            {
+              opacity: 1,
               y: 0,
-            });
-            // Refresh fromTo end value for next play
-            const mediaTween = tl.getTweensOf(media)[0];
-            if (mediaTween) mediaTween.vars.y = mobileFinalY;
-          } else {
-            gsap.set(media, { x: getCenterOffset(), y: 0 });
+              clipPath: "inset(0% 0 0 0)",
+              duration: 0.85,
+              stagger: 0.09,
+              ease: "power3.out",
+            },
+            "heroReveal"
+          )
+          .to(
+            desc,
+            {
+              opacity: 1,
+              y: 0,
+              clipPath: "inset(0% 0 0 0)",
+              duration: 0.7,
+              ease: "power3.out",
+            },
+            0.9
+          )
+          .to(
+            ctas,
+            {
+              opacity: 1,
+              y: 0,
+              clipPath: "inset(0% 0 0 0)",
+              duration: 0.65,
+              ease: "power3.out",
+            },
+            1.05
+          );
+
+        attachNavbar();
+        requestAnimationFrame(attachNavbar);
+
+        const playIntro = () => {
+          if (introDone || animating) return;
+          attachNavbar();
+          animating = true;
+          tl.play(0);
+        };
+
+        const reverseIntro = () => {
+          if (!introDone || animating) return;
+          if (window.scrollY > 2) return;
+          animating = true;
+          lockScroll();
+          // Do NOT reset body dataset before reverse — that caused CSS jumps.
+          tl.reverse();
+        };
+
+        const isBookingModalOpen = () =>
+          document.body.dataset.bookingLock === "true";
+
+        const onWheel = (event) => {
+          if (isBookingModalOpen()) return;
+          if (animating) {
+            event.preventDefault();
+            return;
           }
+          if (!introDone) {
+            event.preventDefault();
+            if (event.deltaY > 6) playIntro();
+            return;
+          }
+          if (event.deltaY < -6 && window.scrollY <= 2) {
+            event.preventDefault();
+            reverseIntro();
+          }
+        };
+
+        const onKeyDown = (event) => {
+          if (isBookingModalOpen()) return;
+          const downKeys = ["ArrowDown", "PageDown", " ", "Spacebar"];
+          const upKeys = ["ArrowUp", "PageUp"];
+          if (animating) {
+            event.preventDefault();
+            return;
+          }
+          if (!introDone && downKeys.includes(event.key)) {
+            event.preventDefault();
+            playIntro();
+            return;
+          }
+          if (introDone && upKeys.includes(event.key) && window.scrollY <= 2) {
+            event.preventDefault();
+            reverseIntro();
+          }
+        };
+
+        const onTouchStart = (event) => {
+          if (isBookingModalOpen()) return;
+          touchStartY = event.touches[0].clientY;
+        };
+
+        const onTouchMove = (event) => {
+          if (isBookingModalOpen()) return;
+          const delta = touchStartY - event.touches[0].clientY;
+          if (animating) {
+            event.preventDefault();
+            return;
+          }
+          if (!introDone) {
+            event.preventDefault();
+            if (delta > 28) playIntro();
+            return;
+          }
+          if (introDone && window.scrollY <= 2 && delta < -28) {
+            event.preventDefault();
+            reverseIntro();
+          }
+        };
+
+        const onResize = () => {
+          if (!introDone && !animating) {
+            const nextCenter = getCenterOffset();
+            gsap.set(media, { x: nextCenter, y: 0 });
+            const mediaTween = tl.getTweensOf(media)[0];
+            if (mediaTween?.vars) {
+              mediaTween.vars.startAt = { x: nextCenter, y: 0, scale: 1 };
+            }
+          }
+          ScrollTrigger.refresh();
+        };
+
+        window.addEventListener("wheel", onWheel, { passive: false });
+        window.addEventListener("keydown", onKeyDown);
+        window.addEventListener("touchstart", onTouchStart, { passive: true });
+        window.addEventListener("touchmove", onTouchMove, { passive: false });
+        window.addEventListener("resize", onResize);
+
+        const nextSection = section.nextElementSibling;
+        let exitTween = null;
+        if (nextSection) {
+          exitTween = gsap.to(layout, {
+            opacity: 0,
+            y: -60,
+            filter: "blur(8px)",
+            ease: "none",
+            scrollTrigger: {
+              trigger: nextSection,
+              start: "top bottom",
+              end: "top 25%",
+              scrub: true,
+            },
+          });
         }
-        ScrollTrigger.refresh();
-      };
 
-      window.addEventListener("resize", onResize);
+        return () => {
+          window.removeEventListener("wheel", onWheel);
+          window.removeEventListener("keydown", onKeyDown);
+          window.removeEventListener("touchstart", onTouchStart);
+          window.removeEventListener("touchmove", onTouchMove);
+          window.removeEventListener("resize", onResize);
+          exitTween?.scrollTrigger?.kill();
+          exitTween?.kill();
+          tl.kill();
+        };
+      });
 
-      // Soft exit of hero content when scrolling into Expertise (after intro)
-      const nextSection = section.nextElementSibling;
-      let exitTween = null;
-      if (nextSection) {
-        exitTween = gsap.to(layout, {
+      mm.add("(max-width: 768px)", () => {
+        let introDone = false;
+        let animating = false;
+        let touchStartY = 0;
+        let navbarAttached = false;
+
+        // Mobile: one relative wrapper; only y/scale transforms (no position switch).
+        gsap.set(media, {
+          clearProps: "position,left,top,xPercent,yPercent,margin",
+          x: 0,
+          y: 0,
+          scale: 1,
+          opacity: 1,
+        });
+
+        // Measure natural top slot, then offset to viewport center for intro.
+        const rect = media.getBoundingClientRect();
+        const introY =
+          window.innerHeight / 2 - (rect.top + rect.height / 2);
+
+        gsap.set(black, { opacity: 1 });
+        gsap.set(theme, { opacity: 0 });
+        gsap.set(vignette, { opacity: 0 });
+        gsap.set(media, { x: 0, y: introY, scale: 0.9, opacity: 1 });
+        gsap.set(textBlocks, {
           opacity: 0,
-          y: -60,
-          filter: "blur(8px)",
-          ease: "none",
-          scrollTrigger: {
-            trigger: nextSection,
-            start: "top bottom",
-            end: "top 25%",
-            scrub: true,
+          y: 36,
+          clipPath: "inset(100% 0 0 0)",
+        });
+        gsap.set(layout, { opacity: 1, y: 0, filter: "blur(0px)" });
+
+        const tl = gsap.timeline({
+          paused: true,
+          defaults: { ease: "power3.out" },
+          onUpdate: () => notifyIntroProgress(tl.progress()),
+          onComplete: () => {
+            introDone = true;
+            animating = false;
+            unlockScroll();
+            ScrollTrigger.refresh();
+            notifyIntroComplete();
+          },
+          onReverseComplete: () => {
+            introDone = false;
+            animating = false;
+            lockScroll();
+            window.scrollTo(0, 0);
+            notifyIntroReset();
           },
         });
-      }
+
+        const attachNavbar = () => {
+          if (navbarAttached) return;
+          const navbar = document.querySelector("[data-main-navbar]");
+          if (!navbar) return;
+          gsap.set(navbar, {
+            xPercent: -50,
+            opacity: 0,
+            y: -14,
+            filter: "blur(8px)",
+            pointerEvents: "none",
+            visibility: "visible",
+          });
+          tl.to(
+            navbar,
+            {
+              xPercent: -50,
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              pointerEvents: "auto",
+              duration: 0.7,
+              ease: "power3.out",
+            },
+            "heroReveal"
+          );
+          navbarAttached = true;
+        };
+
+        // Centered intro → top hero slot. Frozen from/to = smooth reverse.
+        tl.fromTo(
+          media,
+          { x: 0, y: introY, scale: 0.9 },
+          {
+            x: 0,
+            y: 0,
+            scale: 1,
+            duration: 1.35,
+            ease: "power3.inOut",
+            immediateRender: false,
+          },
+          0
+        )
+          .to(theme, { opacity: 1, duration: 1.25, ease: "power2.inOut" }, 0)
+          .to(black, { opacity: 0, duration: 1.25, ease: "power2.inOut" }, 0)
+          .to(
+            vignette,
+            { opacity: 1, duration: 1.1, ease: "power2.out" },
+            0.1
+          )
+          .addLabel("heroReveal", 0.55)
+          .to(
+            [label, ...titleLines],
+            {
+              opacity: 1,
+              y: 0,
+              clipPath: "inset(0% 0 0 0)",
+              duration: 0.85,
+              stagger: 0.09,
+              ease: "power3.out",
+            },
+            "heroReveal"
+          )
+          .to(
+            desc,
+            {
+              opacity: 1,
+              y: 0,
+              clipPath: "inset(0% 0 0 0)",
+              duration: 0.7,
+              ease: "power3.out",
+            },
+            0.9
+          )
+          .to(
+            ctas,
+            {
+              opacity: 1,
+              y: 0,
+              clipPath: "inset(0% 0 0 0)",
+              duration: 0.65,
+              ease: "power3.out",
+            },
+            1.05
+          );
+
+        attachNavbar();
+        requestAnimationFrame(attachNavbar);
+
+        const playIntro = () => {
+          if (introDone || animating) return;
+          attachNavbar();
+          animating = true;
+          tl.play(0);
+        };
+
+        const reverseIntro = () => {
+          if (!introDone || animating) return;
+          if (window.scrollY > 2) return;
+          animating = true;
+          lockScroll();
+          tl.reverse();
+        };
+
+        const isBookingModalOpen = () =>
+          document.body.dataset.bookingLock === "true";
+
+        const onWheel = (event) => {
+          if (isBookingModalOpen()) return;
+          if (animating) {
+            event.preventDefault();
+            return;
+          }
+          if (!introDone) {
+            event.preventDefault();
+            if (event.deltaY > 6) playIntro();
+            return;
+          }
+          if (event.deltaY < -6 && window.scrollY <= 2) {
+            event.preventDefault();
+            reverseIntro();
+          }
+        };
+
+        const onKeyDown = (event) => {
+          if (isBookingModalOpen()) return;
+          const downKeys = ["ArrowDown", "PageDown", " ", "Spacebar"];
+          const upKeys = ["ArrowUp", "PageUp"];
+          if (animating) {
+            event.preventDefault();
+            return;
+          }
+          if (!introDone && downKeys.includes(event.key)) {
+            event.preventDefault();
+            playIntro();
+            return;
+          }
+          if (introDone && upKeys.includes(event.key) && window.scrollY <= 2) {
+            event.preventDefault();
+            reverseIntro();
+          }
+        };
+
+        const onTouchStart = (event) => {
+          if (isBookingModalOpen()) return;
+          touchStartY = event.touches[0].clientY;
+        };
+
+        const onTouchMove = (event) => {
+          if (isBookingModalOpen()) return;
+          const delta = touchStartY - event.touches[0].clientY;
+          if (animating) {
+            event.preventDefault();
+            return;
+          }
+          if (!introDone) {
+            event.preventDefault();
+            if (delta > 28) playIntro();
+            return;
+          }
+          if (introDone && window.scrollY <= 2 && delta < -28) {
+            event.preventDefault();
+            reverseIntro();
+          }
+        };
+
+        const onResize = () => {
+          if (!introDone && !animating) {
+            gsap.set(media, { x: 0, y: 0, scale: 1 });
+            const nextRect = media.getBoundingClientRect();
+            const nextIntroY =
+              window.innerHeight / 2 - (nextRect.top + nextRect.height / 2);
+            gsap.set(media, { y: nextIntroY, scale: 0.9 });
+          }
+          ScrollTrigger.refresh();
+        };
+
+        window.addEventListener("wheel", onWheel, { passive: false });
+        window.addEventListener("keydown", onKeyDown);
+        window.addEventListener("touchstart", onTouchStart, { passive: true });
+        window.addEventListener("touchmove", onTouchMove, { passive: false });
+        window.addEventListener("resize", onResize);
+
+        const nextSection = section.nextElementSibling;
+        let exitTween = null;
+        if (nextSection) {
+          exitTween = gsap.to(layout, {
+            opacity: 0,
+            y: -40,
+            filter: "blur(6px)",
+            ease: "none",
+            scrollTrigger: {
+              trigger: nextSection,
+              start: "top bottom",
+              end: "top 30%",
+              scrub: true,
+            },
+          });
+        }
+
+        return () => {
+          window.removeEventListener("wheel", onWheel);
+          window.removeEventListener("keydown", onKeyDown);
+          window.removeEventListener("touchstart", onTouchStart);
+          window.removeEventListener("touchmove", onTouchMove);
+          window.removeEventListener("resize", onResize);
+          exitTween?.scrollTrigger?.kill();
+          exitTween?.kill();
+          tl.kill();
+        };
+      });
 
       return () => {
         unlockScroll();
-        window.removeEventListener("wheel", onWheel);
-        window.removeEventListener("keydown", onKeyDown);
-        window.removeEventListener("touchstart", onTouchStart);
-        window.removeEventListener("touchmove", onTouchMove);
-        window.removeEventListener("resize", onResize);
-        exitTween?.scrollTrigger?.kill();
-        exitTween?.kill();
-        tl.kill();
+        mm.revert();
       };
     },
     { scope: sectionRef }
@@ -536,21 +712,13 @@ export default function HeroIntro() {
 
         <div ref={mediaRef} className={styles.media}>
           <div className={styles.portrait}>
-            {/*
-              Note: public/owner.png / owner1.png are opaque RGB (no alpha).
-              public/11.png has real transparency. Use a clean transparent PNG
-              for best cutout — CSS mask cannot remove baked-in backgrounds.
-            */}
             <Image
               src="/11.png"
               alt="Makeup By Hiraa"
               fill
               priority
-              sizes="(max-width: 900px) 92vw, 48vw"
+              sizes="(max-width: 768px) 82vw, (max-width: 1200px) 48vw, 560px"
               className={styles.image}
-              onLoadingComplete={() => {
-                ScrollTrigger.refresh();
-              }}
             />
           </div>
         </div>

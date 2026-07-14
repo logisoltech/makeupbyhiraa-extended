@@ -103,49 +103,127 @@
   transform: scale(1.08);
 }
 
+/* Desktop/tablet only — mobile uses hamburger */
+.mobileRoot {
+  display: none;
+}
+
 @media (max-width: 768px) {
-  .nav {
+  .nav,
+  .compact {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .mobileRoot {
+    display: contents;
+  }
+
+  .mobileButton {
     position: fixed;
-    top: calc(12px + env(safe-area-inset-top, 0px));
-    left: 50%;
-    /* GSAP owns translate via xPercent; keep left centered */
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    left: 16px;
     z-index: 9999;
-    height: 38px;
-    gap: 4px;
-    padding: 5px 7px;
+    width: 42px;
+    height: 42px;
     border-radius: 999px;
-    background: rgba(255, 241, 245, 0.46);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    appearance: none;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    background: rgba(255, 241, 245, 0.58);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    box-shadow: 0 8px 22px rgba(58, 31, 35, 0.05);
-    flex-wrap: nowrap;
-    max-width: calc(100vw - 24px);
+    box-shadow: 0 12px 30px rgba(58, 31, 35, 0.08);
+    color: #8a3f52;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.35s ease,
+      visibility 0.35s ease,
+      background 0.25s ease;
   }
 
-  .link {
-    font-size: 11px;
-    padding: 7px 9px;
-    white-space: nowrap;
-    flex-shrink: 0;
+  .mobileButtonVisible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
-  .compact {
-    top: calc(12px + env(safe-area-inset-top, 0px));
+  .mobileButton svg {
+    display: block;
+    width: 22px;
+    height: 22px;
+  }
+
+  .mobileButton:hover {
+    background: rgba(255, 255, 255, 0.34);
+  }
+
+  .mobileDropdown {
+    position: fixed;
+    top: calc(66px + env(safe-area-inset-top, 0px));
     left: 16px;
-    width: 40px;
-    height: 40px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 20px;
+    background: rgba(255, 241, 245, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    box-shadow: 0 18px 45px rgba(58, 31, 35, 0.12);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease,
+      visibility 0.25s ease;
   }
 
-  .compact svg {
-    width: 18px;
-    height: 18px;
+  .mobileDropdownOpen {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .mobileItem {
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 10px 14px;
+    border-radius: 999px;
+    color: #8a3f52;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .mobileItem:hover,
+  .mobileItemActive {
+    background: rgba(255, 255, 255, 0.35);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .link,
-  .compact svg {
+  .compact svg,
+  .mobileButton,
+  .mobileDropdown {
     transition: none;
   }
 }

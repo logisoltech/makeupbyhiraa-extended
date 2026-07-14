@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
-import { HiHome } from "react-icons/hi2";
+import { HiHome, HiBars3, HiXMark } from "react-icons/hi2";
 import { useBookingModal } from "@/components/BookingModal/BookingModalContext";
 import styles from "./Navbar.module.css";
 
@@ -17,6 +17,7 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [navState, setNavState] = useState("hidden");
   const [active, setActive] = useState("about");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -335,18 +336,21 @@ export default function Navbar() {
 
   const goAbout = (event) => {
     event.preventDefault();
+    setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
     setActive("about");
   };
 
   const goHome = (event) => {
     event.preventDefault();
+    setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
     setActive("about");
   };
 
   const goServices = (event) => {
     event.preventDefault();
+    setMenuOpen(false);
     const target = document.querySelector("#services");
     if (target) target.scrollIntoView({ behavior: "smooth" });
     setActive("services");
@@ -354,14 +358,20 @@ export default function Navbar() {
 
   const goBooking = (event) => {
     event.preventDefault();
+    setMenuOpen(false);
     openBooking();
     setActive("booking");
   };
+
+  useEffect(() => {
+    if (navState === "hidden") setMenuOpen(false);
+  }, [navState]);
 
   if (!mounted) return null;
 
   const fullVisible = navState === "full";
   const compactVisible = navState === "compact";
+  const mobileMenuVisible = navState === "full" || navState === "compact";
 
   return createPortal(
     <>
@@ -415,6 +425,65 @@ export default function Navbar() {
       >
         <HiHome size={21} aria-hidden="true" />
       </button>
+
+      <div className={styles.mobileRoot}>
+        <button
+          type="button"
+          className={`${styles.mobileButton} ${
+            mobileMenuVisible ? styles.mobileButtonVisible : ""
+          }`}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+          aria-hidden={!mobileMenuVisible}
+          tabIndex={mobileMenuVisible ? 0 : -1}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? (
+            <HiXMark size={22} aria-hidden="true" />
+          ) : (
+            <HiBars3 size={22} aria-hidden="true" />
+          )}
+        </button>
+
+        <div
+          className={`${styles.mobileDropdown} ${
+            menuOpen && mobileMenuVisible ? styles.mobileDropdownOpen : ""
+          }`}
+          role="menu"
+          aria-hidden={!menuOpen || !mobileMenuVisible}
+        >
+          <button
+            type="button"
+            role="menuitem"
+            className={`${styles.mobileItem} ${
+              active === "about" ? styles.mobileItemActive : ""
+            }`}
+            onClick={goAbout}
+          >
+            About
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className={`${styles.mobileItem} ${
+              active === "services" ? styles.mobileItemActive : ""
+            }`}
+            onClick={goServices}
+          >
+            Services
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className={`${styles.mobileItem} ${
+              active === "booking" ? styles.mobileItemActive : ""
+            }`}
+            onClick={goBooking}
+          >
+            Booking
+          </button>
+        </div>
+      </div>
     </>,
     document.body
   );
