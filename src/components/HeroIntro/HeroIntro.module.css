@@ -308,6 +308,8 @@
     width: 100%;
     max-width: 100vw;
     overflow-x: hidden;
+    /* Clear fixed mobile navbar so image is not covered */
+    padding-top: calc(72px + env(safe-area-inset-top, 0px));
   }
 
   .layout {
@@ -332,7 +334,7 @@
     max-width: 86vw;
     height: min(52vh, 52dvh);
     max-height: 52vh;
-    margin: 0;
+    margin: 8px 0 0;
     overflow: visible;
     z-index: 4;
     will-change: transform;

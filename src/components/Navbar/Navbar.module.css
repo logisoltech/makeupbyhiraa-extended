@@ -103,41 +103,43 @@
   transform: scale(1.08);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .nav {
-    top: 18px;
-    height: 52px;
-    gap: 5px;
-    padding: 6px;
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    left: 50%;
+    /* GSAP owns translate via xPercent; keep left centered */
+    z-index: 9999;
+    height: 38px;
+    gap: 4px;
+    padding: 5px 7px;
+    border-radius: 999px;
+    background: rgba(255, 241, 245, 0.46);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 8px 22px rgba(58, 31, 35, 0.05);
+    flex-wrap: nowrap;
+    max-width: calc(100vw - 24px);
   }
 
   .link {
-    padding: 9px 13px;
-    font-size: 13.5px;
+    font-size: 11px;
+    padding: 7px 9px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .compact {
-    top: 20px;
-    left: 18px;
-  }
-}
-
-@media (max-width: 480px) {
-  .nav {
-    top: 14px;
-    height: 48px;
-    gap: 3px;
-    padding: 5px;
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    left: 16px;
+    width: 40px;
+    height: 40px;
   }
 
-  .link {
-    padding: 8px 11px;
-    font-size: 12.5px;
-  }
-
-  .compact {
-    top: 16px;
-    left: 14px;
+  .compact svg {
+    width: 18px;
+    height: 18px;
   }
 }
 
