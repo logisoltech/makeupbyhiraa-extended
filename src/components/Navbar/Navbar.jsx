@@ -9,19 +9,14 @@ import styles from "./Navbar.module.css";
 
 export default function Navbar() {
   const { openBooking } = useBookingModal();
-  const navRef = useRef(null);
-  const homeTextRef = useRef(null);
-  const homeIconRef = useRef(null);
-  const servicesRef = useRef(null);
-  const bookingRef = useRef(null);
-  const revealTween = useRef(null);
-  const modeTween = useRef(null);
-  const visibleRef = useRef(false);
-  const compactRef = useRef(false);
+  const fullRef = useRef(null);
+  const compactRef = useRef(null);
+  const stateRef = useRef("hidden");
+  const introDoneRef = useRef(false);
+  const tweenRef = useRef(null);
   const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
-  const [compact, setCompact] = useState(false);
-  const [active, setActive] = useState("home");
+  const [navState, setNavState] = useState("hidden");
+  const [active, setActive] = useState("about");
 
   useEffect(() => {
     setMounted(true);
@@ -30,226 +25,271 @@ export default function Navbar() {
   useEffect(() => {
     if (!mounted) return;
 
-    const nav = navRef.current;
-    const homeText = homeTextRef.current;
-    const homeIcon = homeIconRef.current;
-    const services = servicesRef.current;
-    const booking = bookingRef.current;
-    if (!nav || !homeText || !homeIcon || !services || !booking) return;
+    const full = fullRef.current;
+    const compact = compactRef.current;
+    if (!full || !compact) return;
 
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
+    const dur = reducedMotion ? 0 : 0.4;
 
-    gsap.set(homeIcon, { opacity: 0, visibility: "hidden" });
-    gsap.set([homeText, services, booking], { opacity: 1 });
+    // Initial hidden state — hero timeline owns the first reveal at "heroReveal".
+    gsap.set(full, {
+      xPercent: -50,
+      opacity: 0,
+      y: -14,
+      filter: "blur(8px)",
+      pointerEvents: "none",
+      visibility: "visible",
+    });
+    gsap.set(compact, {
+      opacity: 0,
+      x: -10,
+      visibility: "hidden",
+      pointerEvents: "none",
+    });
 
-    const setHidden = () => {
-      gsap.set(nav, {
-        opacity: 0,
-        y: -16,
-        filter: "blur(8px)",
-        pointerEvents: "none",
-        visibility: "hidden",
-        clearProps: "width,height,padding,gap",
-      });
+    const setState = (next) => {
+      stateRef.current = next;
+      setNavState(next);
     };
 
-    const show = () => {
-      if (visibleRef.current) return;
-      visibleRef.current = true;
-      setVisible(true);
-      revealTween.current?.kill();
+    const goHidden = ({ animate = true } = {}) => {
+      if (stateRef.current === "hidden") return;
 
-      gsap.set(nav, { visibility: "visible" });
-      revealTween.current = gsap.to(nav, {
+      const from = stateRef.current;
+      setState("hidden");
+      tweenRef.current?.kill();
+
+      // During intro reverse, hero timeline drives full-nav opacity — don't fight it.
+      if (!introDoneRef.current && from === "full") {
+        gsap.set(compact, {
+          opacity: 0,
+          x: -10,
+          visibility: "hidden",
+          pointerEvents: "none",
+        });
+        return;
+      }
+
+      if (!animate) {
+        gsap.set(full, {
+          xPercent: -50,
+          opacity: 0,
+          y: -14,
+          filter: "blur(8px)",
+          pointerEvents: "none",
+        });
+        gsap.set(compact, {
+          opacity: 0,
+          x: -10,
+          visibility: "hidden",
+          pointerEvents: "none",
+        });
+        return;
+      }
+
+      tweenRef.current = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      if (from === "full") {
+        tweenRef.current.to(full, {
+          xPercent: -50,
+          opacity: 0,
+          y: -14,
+          filter: "blur(8px)",
+          pointerEvents: "none",
+          duration: reducedMotion ? 0 : 0.35,
+        });
+      }
+
+      if (from === "compact") {
+        tweenRef.current.to(
+          compact,
+          {
+            opacity: 0,
+            x: -10,
+            pointerEvents: "none",
+            duration: reducedMotion ? 0 : 0.3,
+            onComplete: () => {
+              gsap.set(compact, { visibility: "hidden" });
+            },
+          },
+          0
+        );
+      }
+    };
+
+    const goFull = ({ animate = true } = {}) => {
+      if (stateRef.current === "full") return;
+
+      const from = stateRef.current;
+      setState("full");
+      tweenRef.current?.kill();
+
+      // First reveal is owned by the hero GSAP timeline ("heroReveal").
+      if (!introDoneRef.current && from === "hidden") {
+        gsap.set(full, {
+          xPercent: -50,
+          visibility: "visible",
+        });
+        gsap.set(compact, {
+          opacity: 0,
+          visibility: "hidden",
+          pointerEvents: "none",
+        });
+        return;
+      }
+
+      tweenRef.current = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      if (from === "compact") {
+        tweenRef.current.to(
+          compact,
+          {
+            opacity: 0,
+            x: -10,
+            pointerEvents: "none",
+            duration: dur,
+            onComplete: () => {
+              gsap.set(compact, { visibility: "hidden" });
+            },
+          },
+          0
+        );
+      }
+
+      gsap.set(full, {
+        visibility: "visible",
+        xPercent: -50,
+        pointerEvents: "none",
+      });
+
+      if (!animate) {
+        gsap.set(full, {
+          xPercent: -50,
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          pointerEvents: "auto",
+        });
+        return;
+      }
+
+      tweenRef.current.fromTo(
+        full,
+        {
+          xPercent: -50,
+          opacity: 0,
+          y: -14,
+          filter: "blur(8px)",
+        },
+        {
+          xPercent: -50,
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          pointerEvents: "auto",
+          duration: dur,
+        },
+        from === "compact" ? 0.08 : 0
+      );
+    };
+
+    const goCompact = () => {
+      if (stateRef.current === "compact") return;
+
+      const from = stateRef.current;
+      setState("compact");
+      tweenRef.current?.kill();
+
+      tweenRef.current = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      if (from === "full") {
+        tweenRef.current.to(
+          full,
+          {
+            xPercent: -50,
+            opacity: 0,
+            y: -10,
+            filter: "blur(6px)",
+            pointerEvents: "none",
+            duration: dur,
+            onComplete: () => {
+              gsap.set(full, {
+                y: -14,
+                filter: "blur(8px)",
+              });
+            },
+          },
+          0
+        );
+      }
+
+      gsap.set(compact, { visibility: "visible", pointerEvents: "none" });
+
+      tweenRef.current.fromTo(
+        compact,
+        { opacity: 0, x: -10 },
+        {
+          opacity: 1,
+          x: 0,
+          pointerEvents: "auto",
+          duration: dur,
+        },
+        from === "full" ? 0.08 : 0
+      );
+    };
+
+    const isPastHero = () => {
+      const hero = document.querySelector("[data-hero]");
+      if (!hero) return window.scrollY > 100;
+      return window.scrollY > Math.max(90, hero.offsetHeight * 0.22);
+    };
+
+    const syncScrollMode = () => {
+      if (!introDoneRef.current) return;
+      if (isPastHero()) goCompact();
+      else goFull({ animate: stateRef.current === "compact" });
+    };
+
+    const onProgress = (event) => {
+      // Aria/state only during intro — opacity is owned by hero timeline "heroReveal".
+      if (introDoneRef.current) return;
+      const progress = event.detail?.progress ?? 0;
+      if (progress >= 0.32) {
+        if (stateRef.current !== "full") setState("full");
+      } else if (stateRef.current !== "hidden") {
+        setState("hidden");
+      }
+    };
+
+    const onComplete = () => {
+      introDoneRef.current = true;
+      setState("full");
+      gsap.set(full, {
+        xPercent: -50,
         opacity: 1,
         y: 0,
         filter: "blur(0px)",
         pointerEvents: "auto",
-        duration: reducedMotion ? 0 : 0.45,
-        ease: "power3.out",
-        overwrite: "auto",
+        visibility: "visible",
       });
+      syncScrollMode();
     };
 
-    const hide = () => {
-      visibleRef.current = false;
-      compactRef.current = false;
-      setVisible(false);
-      setCompact(false);
-      revealTween.current?.kill();
-      modeTween.current?.kill();
-
-      gsap.set(nav, {
+    const onReset = () => {
+      introDoneRef.current = false;
+      tweenRef.current?.kill();
+      setState("hidden");
+      gsap.set(compact, {
         opacity: 0,
-        y: -16,
-        filter: "blur(8px)",
-        pointerEvents: "none",
+        x: -10,
         visibility: "hidden",
-        clearProps: "width,height,padding,gap",
+        pointerEvents: "none",
       });
-      gsap.set(homeIcon, { opacity: 0, visibility: "hidden" });
-      gsap.set([homeText, services, booking], {
-        opacity: 1,
-        pointerEvents: "auto",
-        clearProps: "width,padding,margin,position",
-      });
-      nav.classList.remove(styles.navCompact);
+      // Full nav opacity is reversed by the hero timeline — don't override it here.
     };
-
-    const toCompact = () => {
-      if (!visibleRef.current || compactRef.current) return;
-      compactRef.current = true;
-      setCompact(true);
-      modeTween.current?.kill();
-
-      const fullWidth = nav.offsetWidth;
-      const fullHeight = nav.offsetHeight;
-      gsap.set(nav, { width: fullWidth, height: fullHeight });
-      gsap.set([services, booking], { overflow: "hidden" });
-      nav.classList.add(styles.navCompact);
-
-      modeTween.current = gsap
-        .timeline({ defaults: { ease: "power3.out" } })
-        .to(
-          [services, booking],
-          {
-            opacity: 0,
-            width: 0,
-            minWidth: 0,
-            padding: 0,
-            margin: 0,
-            duration: reducedMotion ? 0 : 0.35,
-            pointerEvents: "none",
-          },
-          0
-        )
-        .to(
-          homeText,
-          {
-            opacity: 0,
-            duration: reducedMotion ? 0 : 0.28,
-          },
-          0
-        )
-        .set(homeIcon, { visibility: "visible" }, 0)
-        .to(
-          homeIcon,
-          {
-            opacity: 1,
-            duration: reducedMotion ? 0 : 0.35,
-          },
-          0.08
-        )
-        .to(
-          nav,
-          {
-            width: 48,
-            height: 48,
-            padding: 0,
-            gap: 0,
-            duration: reducedMotion ? 0 : 0.42,
-          },
-          0
-        );
-    };
-
-    const toFull = () => {
-      if (!visibleRef.current || !compactRef.current) return;
-      compactRef.current = false;
-      setCompact(false);
-      modeTween.current?.kill();
-
-      // Measure natural full size with items restored but invisible.
-      nav.classList.remove(styles.navCompact);
-      gsap.set(nav, {
-        width: "auto",
-        height: "auto",
-        padding: 8,
-        gap: 8,
-      });
-      gsap.set([services, booking, homeText], {
-        opacity: 0,
-        width: "auto",
-        minWidth: "",
-        padding: "",
-        margin: "",
-        overflow: "",
-        pointerEvents: "auto",
-      });
-      const targetWidth = nav.offsetWidth;
-      const targetHeight = nav.offsetHeight;
-
-      gsap.set(nav, { width: 48, height: 48, padding: 0, gap: 0 });
-      nav.classList.add(styles.navCompact);
-
-      modeTween.current = gsap
-        .timeline({
-          defaults: { ease: "power3.out" },
-          onComplete: () => {
-            nav.classList.remove(styles.navCompact);
-            gsap.set(nav, { clearProps: "width,height,padding,gap" });
-            gsap.set([services, booking], {
-              clearProps: "width,minWidth,padding,margin,overflow",
-            });
-          },
-        })
-        .to(
-          homeIcon,
-          {
-            opacity: 0,
-            duration: reducedMotion ? 0 : 0.25,
-            onComplete: () => {
-              gsap.set(homeIcon, { visibility: "hidden" });
-            },
-          },
-          0
-        )
-        .to(
-          nav,
-          {
-            width: targetWidth,
-            height: targetHeight,
-            padding: 8,
-            gap: 8,
-            duration: reducedMotion ? 0 : 0.42,
-          },
-          0
-        )
-        .add(() => {
-          nav.classList.remove(styles.navCompact);
-        }, 0.02)
-        .to(
-          [homeText, services, booking],
-          {
-            opacity: 1,
-            duration: reducedMotion ? 0 : 0.35,
-          },
-          0.12
-        );
-    };
-
-    const syncCompact = () => {
-      if (!visibleRef.current) return;
-      if (window.scrollY > 80) toCompact();
-      else toFull();
-    };
-
-    const onProgress = (event) => {
-      const progress = event.detail?.progress ?? 0;
-      if (progress < 0.95) hide();
-    };
-
-    const onComplete = () => {
-      show();
-      requestAnimationFrame(syncCompact);
-    };
-
-    setHidden();
-    if (document.body.dataset.heroIntro === "done") {
-      onComplete();
-    }
 
     const onScroll = () => {
       const servicesEl = document.getElementById("services");
@@ -258,31 +298,51 @@ export default function Navbar() {
 
       if (contact && y >= contact.offsetTop) setActive("booking");
       else if (servicesEl && y >= servicesEl.offsetTop) setActive("services");
-      else setActive("home");
+      else setActive("about");
 
-      syncCompact();
+      syncScrollMode();
     };
 
+    if (document.body.dataset.heroIntro === "done") {
+      introDoneRef.current = true;
+      goFull({ animate: false });
+      gsap.set(full, {
+        xPercent: -50,
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        pointerEvents: "auto",
+        visibility: "visible",
+      });
+      syncScrollMode();
+    }
+
     onScroll();
+
     window.addEventListener("hero:intro-progress", onProgress);
     window.addEventListener("hero:intro-complete", onComplete);
-    window.addEventListener("hero:intro-reset", hide);
+    window.addEventListener("hero:intro-reset", onReset);
     window.addEventListener("scroll", onScroll, { passive: true });
 
     return () => {
       window.removeEventListener("hero:intro-progress", onProgress);
       window.removeEventListener("hero:intro-complete", onComplete);
-      window.removeEventListener("hero:intro-reset", hide);
+      window.removeEventListener("hero:intro-reset", onReset);
       window.removeEventListener("scroll", onScroll);
-      revealTween.current?.kill();
-      modeTween.current?.kill();
+      tweenRef.current?.kill();
     };
   }, [mounted]);
+
+  const goAbout = (event) => {
+    event.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setActive("about");
+  };
 
   const goHome = (event) => {
     event.preventDefault();
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setActive("home");
+    setActive("about");
   };
 
   const goServices = (event) => {
@@ -300,57 +360,62 @@ export default function Navbar() {
 
   if (!mounted) return null;
 
+  const fullVisible = navState === "full";
+  const compactVisible = navState === "compact";
+
   return createPortal(
-    <nav
-      ref={navRef}
-      className={`${styles.nav} ${compact ? styles.navCompact : ""}`}
-      aria-label="Primary"
-      aria-hidden={!visible}
-    >
-      <a
-        href="#"
-        className={`${styles.homeLink} ${
-          active === "home" && !compact ? styles.linkActive : ""
-        }`}
-        tabIndex={visible ? 0 : -1}
+    <>
+      <nav
+        ref={fullRef}
+        className={`${styles.nav} main-navbar`}
+        data-main-navbar
+        aria-label="Primary"
+        aria-hidden={!fullVisible}
+      >
+        <a
+          href="#"
+          className={`${styles.link} ${
+            active === "about" ? styles.linkActive : ""
+          }`}
+          tabIndex={fullVisible ? 0 : -1}
+          onClick={goAbout}
+        >
+          About
+        </a>
+        <a
+          href="#services"
+          className={`${styles.link} ${
+            active === "services" ? styles.linkActive : ""
+          }`}
+          tabIndex={fullVisible ? 0 : -1}
+          onClick={goServices}
+        >
+          Services
+        </a>
+        <a
+          href="#contact"
+          className={`${styles.link} ${
+            active === "booking" ? styles.linkActive : ""
+          }`}
+          tabIndex={fullVisible ? 0 : -1}
+          onClick={goBooking}
+        >
+          Booking
+        </a>
+      </nav>
+
+      <button
+        ref={compactRef}
+        type="button"
+        className={styles.compact}
         aria-label="Home"
+        aria-hidden={!compactVisible}
+        tabIndex={compactVisible ? 0 : -1}
         onClick={goHome}
       >
-        <span ref={homeTextRef} className={styles.homeText}>
-          Home
-        </span>
-        <span ref={homeIconRef} className={styles.homeIcon} aria-hidden="true">
-          <HiHome size={21} />
-        </span>
-      </a>
-
-      <a
-        ref={servicesRef}
-        href="#services"
-        className={`${styles.link} ${
-          active === "services" ? styles.linkActive : ""
-        }`}
-        tabIndex={visible && !compact ? 0 : -1}
-        onClick={goServices}
-      >
-        Services
-      </a>
-
-      <a
-        ref={bookingRef}
-        href="#contact"
-        className={`${styles.link} ${styles.booking} ${
-          active === "booking" ? styles.bookingActive : ""
-        }`}
-        tabIndex={visible && !compact ? 0 : -1}
-        onClick={goBooking}
-      >
-        <span>Booking</span>
-        <span className={styles.arrow} aria-hidden="true">
-          →
-        </span>
-      </a>
-    </nav>,
+        <HiHome size={21} aria-hidden="true" />
+      </button>
+    </>,
     document.body
   );
 }

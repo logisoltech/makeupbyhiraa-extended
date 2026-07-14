@@ -84,6 +84,17 @@ export default function HeroIntro() {
           y: 0,
           clipPath: "none",
         });
+        const navbarReduced = document.querySelector("[data-main-navbar]");
+        if (navbarReduced) {
+          gsap.set(navbarReduced, {
+            xPercent: -50,
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            pointerEvents: "auto",
+            visibility: "visible",
+          });
+        }
         notifyIntroComplete();
         return;
       }
@@ -143,6 +154,38 @@ export default function HeroIntro() {
         },
       });
 
+      let navbarAttached = false;
+
+      const attachNavbarToTimeline = () => {
+        if (navbarAttached) return;
+        const navbar = document.querySelector("[data-main-navbar]");
+        if (!navbar) return;
+
+        gsap.set(navbar, {
+          xPercent: -50,
+          opacity: 0,
+          y: -14,
+          filter: "blur(8px)",
+          pointerEvents: "none",
+          visibility: "visible",
+        });
+
+        tl.to(
+          navbar,
+          {
+            xPercent: -50,
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            pointerEvents: "auto",
+            duration: 0.7,
+            ease: "power3.out",
+          },
+          "heroReveal"
+        );
+        navbarAttached = true;
+      };
+
       // Full cinematic transition — plays once on scroll intent
       tl.to(
         media,
@@ -180,6 +223,7 @@ export default function HeroIntro() {
           },
           0.1
         )
+        .addLabel("heroReveal", 0.55)
         .to(
           [label, ...titleLines],
           {
@@ -190,7 +234,7 @@ export default function HeroIntro() {
             stagger: 0.09,
             ease: "power3.out",
           },
-          0.55
+          "heroReveal"
         )
         .to(
           desc,
@@ -215,8 +259,12 @@ export default function HeroIntro() {
           1.05
         );
 
+      attachNavbarToTimeline();
+      requestAnimationFrame(attachNavbarToTimeline);
+
       const playIntro = () => {
         if (introDone || animating) return;
+        attachNavbarToTimeline();
         animating = true;
         tl.play(0);
       };
