@@ -5,6 +5,7 @@ import Image from "next/image";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useBookingModal } from "@/components/BookingModal/BookingModalContext";
 import styles from "./Expertise.module.css";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -95,12 +96,14 @@ const TITLE_WORDS = [
 ];
 
 export default function Expertise() {
+  const { openBooking } = useBookingModal();
   const sectionRef = useRef(null);
   const headerRef = useRef(null);
   const labelRef = useRef(null);
   const wordRefs = useRef([]);
   const stageRef = useRef(null);
   const cardsRef = useRef([]);
+  const ctaRef = useRef(null);
 
   useGSAP(
     () => {
@@ -109,6 +112,7 @@ export default function Expertise() {
       const label = labelRef.current;
       const titleWords = wordRefs.current.filter(Boolean);
       const cards = cardsRef.current.filter(Boolean);
+      const cta = ctaRef.current;
 
       if (!section || !header || !label || titleWords.length === 0 || cards.length === 0)
         return;
@@ -116,6 +120,26 @@ export default function Expertise() {
       const prefersReducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
       ).matches;
+
+      if (cta) {
+        if (prefersReducedMotion) {
+          gsap.set(cta, { opacity: 1, y: 0, filter: "none" });
+        } else {
+          gsap.set(cta, { opacity: 0, y: 20, filter: "blur(6px)" });
+          gsap.to(cta, {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            duration: 0.6,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: cta,
+              start: "top 92%",
+              toggleActions: "play none none reverse",
+            },
+          });
+        }
+      }
 
       const leadIndex = 3;
 
@@ -294,6 +318,20 @@ export default function Expertise() {
             </article>
           ))}
         </div>
+      </div>
+
+      <div className={styles.ctaWrap}>
+        <button
+          ref={ctaRef}
+          type="button"
+          className={styles.ctaSmallGlass}
+          onClick={openBooking}
+        >
+          <span>Book Your Look</span>
+          <span className={styles.ctaArrow} aria-hidden="true">
+            →
+          </span>
+        </button>
       </div>
     </section>
   );

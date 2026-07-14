@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import gsap from "gsap";
 import { useBookingModal } from "@/components/BookingModal/BookingModalContext";
 import styles from "./Navbar.module.css";
@@ -78,7 +79,6 @@ export default function Navbar() {
     gsap.set(compact, {
       opacity: 0,
       x: -20,
-      yPercent: -50,
       scale: 0.95,
       pointerEvents: "none",
       visibility: "hidden",
@@ -125,7 +125,6 @@ export default function Navbar() {
         compactTween.current = gsap.to(compact, {
           opacity: 0,
           x: -20,
-          yPercent: -50,
           scale: 0.95,
           pointerEvents: "none",
           duration: reducedMotion ? 0 : duration,
@@ -138,11 +137,10 @@ export default function Navbar() {
       };
 
       const showCompact = () => {
-        gsap.set(compact, { visibility: "visible", yPercent: -50 });
+        gsap.set(compact, { visibility: "visible" });
         compactTween.current = gsap.to(compact, {
           opacity: 1,
           x: 0,
-          yPercent: -50,
           scale: 1,
           pointerEvents: "auto",
           duration: reducedMotion ? 0 : 0.45,
@@ -163,7 +161,6 @@ export default function Navbar() {
         gsap.set(compact, {
           opacity: 0,
           x: -20,
-          yPercent: -50,
           scale: 0.95,
           pointerEvents: "none",
           visibility: "hidden",
@@ -408,53 +405,56 @@ export default function Navbar() {
         </nav>
       </div>
 
-      <div
-        ref={compactRef}
-        className={`${styles.compact} ${
-          compactActive ? styles.compactActive : ""
-        }`}
-        aria-hidden={!compactActive}
-      >
-        <div className={styles.compactBar}>
-          <span className={styles.compactMark} aria-hidden="true">
-            H
-          </span>
+      {typeof document !== "undefined"
+        ? createPortal(
+            <div
+              ref={compactRef}
+              className={`${styles.compact} ${
+                compactActive ? styles.compactActive : ""
+              }`}
+              aria-hidden={!compactActive}
+            >
+              <div className={styles.compactBar}>
+                <span className={styles.compactLogo}>Hiraa.</span>
 
-          <button
-            type="button"
-            className={`${styles.compactPlus} ${
-              compactMenuOpen ? styles.compactPlusOpen : ""
-            }`}
-            aria-label={compactMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={compactMenuOpen}
-            tabIndex={compactActive ? 0 : -1}
-            onClick={() => setCompactMenuOpen((open) => !open)}
-          >
-            <span className={styles.plusIcon} aria-hidden="true" />
-          </button>
+                <button
+                  type="button"
+                  className={`${styles.compactPlus} ${
+                    compactMenuOpen ? styles.compactPlusOpen : ""
+                  }`}
+                  aria-label={compactMenuOpen ? "Close menu" : "Open menu"}
+                  aria-expanded={compactMenuOpen}
+                  tabIndex={compactActive ? 0 : -1}
+                  onClick={() => setCompactMenuOpen((open) => !open)}
+                >
+                  <span className={styles.plusIcon} aria-hidden="true" />
+                </button>
+              </div>
 
-          <div ref={menuRef} className={styles.compactMenu}>
-            {LINKS.map((link) => (
-              <a
-                key={link.id}
-                href={link.href}
-                tabIndex={compactActive && compactMenuOpen ? 0 : -1}
-                className={[
-                  styles.compactLink,
-                  link.booking ? styles.compactBooking : "",
-                  active === link.id ? styles.compactLinkActive : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                onClick={(event) => handleNav(event, link)}
-              >
-                <span>{link.label}</span>
-                {link.booking ? <BookingArrow /> : null}
-              </a>
-            ))}
-          </div>
-        </div>
-      </div>
+              <div ref={menuRef} className={styles.compactMenu}>
+                {LINKS.map((link) => (
+                  <a
+                    key={link.id}
+                    href={link.href}
+                    tabIndex={compactActive && compactMenuOpen ? 0 : -1}
+                    className={[
+                      styles.compactLink,
+                      link.booking ? styles.compactBooking : "",
+                      active === link.id ? styles.compactLinkActive : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={(event) => handleNav(event, link)}
+                  >
+                    <span>{link.label}</span>
+                    {link.booking ? <BookingArrow /> : null}
+                  </a>
+                ))}
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </>
   );
 }

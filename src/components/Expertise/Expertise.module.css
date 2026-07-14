@@ -117,6 +117,57 @@
   );
 }
 
+.ctaWrap {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: clamp(1.25rem, 3vh, 2rem);
+  padding-bottom: 0.5rem;
+}
+
+.ctaSmallGlass {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(58, 31, 35, 0.12);
+  background: rgba(255, 241, 245, 0.42);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 14px 35px rgba(58, 31, 35, 0.08);
+  color: #3a1f23;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  appearance: none;
+  transform: none;
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.ctaSmallGlass:hover {
+  transform: none;
+  background: rgba(250, 221, 225, 0.55);
+  border-color: rgba(58, 31, 35, 0.18);
+  box-shadow: 0 16px 40px rgba(58, 31, 35, 0.1);
+}
+
+.ctaArrow {
+  display: inline-flex;
+  transition: transform 0.35s ease;
+}
+
+.ctaSmallGlass:hover .ctaArrow {
+  transform: translateX(5px);
+}
+
 @media (max-width: 1024px) {
   .section {
     padding: clamp(1.25rem, 3vh, 2rem) 5vw 1.25rem;
@@ -154,7 +205,8 @@
 @media (prefers-reduced-motion: reduce) {
   .label,
   .wordInner,
-  .card {
+  .card,
+  .ctaSmallGlass {
     opacity: 1 !important;
     filter: none !important;
     transform: none !important;
