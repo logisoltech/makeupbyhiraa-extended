@@ -15,21 +15,21 @@ const SERVICES = [
     description:
       "Elegant, timeless bridal looks designed to photograph beautifully and last throughout your special day.",
     image:
-      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1400&q=80",
+      "/p99.png",
   },
   {
     title: "Hair Styling",
     description:
       "Soft waves, sleek finishes, and polished hairstyles tailored to complement your overall look.",
     image:
-      "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1400&q=80",
+      "/p100.png",
   },
   {
     title: "Special Occasion",
     description:
       "Refined makeup and hair styling for formals, events, and celebrations that call for a flawless finish.",
     image:
-      "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=1400&q=80",
+      "/p111.png",
   },
 ];
 
