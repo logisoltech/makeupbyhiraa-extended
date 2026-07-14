@@ -51,13 +51,28 @@ export default function HeroIntro() {
         return window.innerWidth / 2 - mediaCenter;
       };
 
+      const notifyIntroProgress = (progress) => {
+        window.dispatchEvent(
+          new CustomEvent("hero:intro-progress", {
+            detail: { progress },
+          })
+        );
+      };
+
       const notifyIntroComplete = () => {
+        document.body.dataset.heroIntro = "done";
+        notifyIntroProgress(1);
         window.dispatchEvent(new CustomEvent("hero:intro-complete"));
       };
 
       const notifyIntroReset = () => {
+        document.body.dataset.heroIntro = "active";
+        notifyIntroProgress(0);
         window.dispatchEvent(new CustomEvent("hero:intro-reset"));
       };
+
+      document.body.dataset.heroIntro = "active";
+      notifyIntroProgress(0);
 
       if (prefersReducedMotion) {
         gsap.set(black, { opacity: 0 });
@@ -109,6 +124,9 @@ export default function HeroIntro() {
       const tl = gsap.timeline({
         paused: true,
         defaults: { ease: "power3.out" },
+        onUpdate: () => {
+          notifyIntroProgress(tl.progress());
+        },
         onComplete: () => {
           introDone = true;
           animating = false;
@@ -208,10 +226,17 @@ export default function HeroIntro() {
         if (window.scrollY > 2) return;
         animating = true;
         lockScroll();
+        // Hide navbar before black intro becomes visible again.
+        notifyIntroReset();
         tl.reverse();
       };
 
+      const isBookingModalOpen = () =>
+        document.body.dataset.bookingLock === "true";
+
       const onWheel = (event) => {
+        if (isBookingModalOpen()) return;
+
         if (animating) {
           event.preventDefault();
           return;
@@ -230,6 +255,8 @@ export default function HeroIntro() {
       };
 
       const onKeyDown = (event) => {
+        if (isBookingModalOpen()) return;
+
         const downKeys = ["ArrowDown", "PageDown", " ", "Spacebar"];
         const upKeys = ["ArrowUp", "PageUp"];
 
@@ -255,10 +282,13 @@ export default function HeroIntro() {
       };
 
       const onTouchStart = (event) => {
+        if (isBookingModalOpen()) return;
         touchStartY = event.touches[0].clientY;
       };
 
       const onTouchMove = (event) => {
+        if (isBookingModalOpen()) return;
+
         const delta = touchStartY - event.touches[0].clientY;
 
         if (animating) {

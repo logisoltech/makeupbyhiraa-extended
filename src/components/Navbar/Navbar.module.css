@@ -15,14 +15,13 @@
   justify-content: center;
   padding: 0.9rem 1rem 0;
   opacity: 0;
-  transform: translateY(-24px);
-  filter: blur(8px);
+  visibility: hidden;
   pointer-events: none;
   will-change: opacity, transform, filter;
 }
 
-.shellRevealed {
-  /* GSAP owns transform/opacity; class tracks interactive state */
+.shellActive {
+  /* GSAP controls visibility while active */
 }
 
 .bar {
@@ -158,7 +157,8 @@
     opacity 0.3s ease;
 }
 
-.booking:hover .bookingArrow {
+.booking:hover .bookingArrow,
+.compactBooking:hover .bookingArrow {
   opacity: 1;
   transform: translateX(2px);
 }
@@ -293,6 +293,165 @@
     );
 }
 
+/* Compact left-side nav */
+.compact {
+  --ink: #3a1f23;
+  position: fixed;
+  left: 24px;
+  top: 50%;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  will-change: opacity, transform;
+  /* Vertical centering via GSAP yPercent: -50 */
+}
+
+.compactActive {
+  /* GSAP controls visibility while active */
+}
+
+.compactBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 999px;
+  background: rgba(255, 241, 245, 0.48);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 14px 45px rgba(58, 31, 35, 0.1);
+}
+
+.compactMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  font-family: var(--font-script), cursive;
+  font-size: 1.25rem;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.compactPlus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.38);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.compactPlus:hover {
+  background: rgba(250, 221, 225, 0.55);
+}
+
+.plusIcon {
+  position: relative;
+  width: 0.85rem;
+  height: 0.85rem;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.plusIcon::before,
+.plusIcon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: currentColor;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+}
+
+.plusIcon::before {
+  width: 100%;
+  height: 1.5px;
+}
+
+.plusIcon::after {
+  width: 1.5px;
+  height: 100%;
+}
+
+.compactPlusOpen .plusIcon {
+  transform: rotate(45deg);
+}
+
+.compactMenu {
+  display: none;
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 168px;
+  padding: 14px;
+  border-radius: 22px;
+  background: rgba(255, 241, 245, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 20px 55px rgba(58, 31, 35, 0.14);
+}
+
+.compactLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2.4rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(58, 31, 35, 0.84);
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+.compactLink:hover,
+.compactLinkActive {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.compactBooking {
+  font-weight: 600;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.35),
+      rgba(250, 221, 225, 0.55)
+    );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.compactBooking:hover,
+.compactBooking.compactLinkActive {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.45),
+      rgba(252, 213, 206, 0.62)
+    );
+}
+
 @media (max-width: 768px) {
   .shell {
     padding: 0.75rem 0.75rem 0;
@@ -316,6 +475,10 @@
   .menuBtn {
     display: inline-flex;
   }
+
+  .compact {
+    left: 14px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -323,7 +486,10 @@
   .link,
   .bookingArrow,
   .menuIcon span,
-  .mobileLink {
+  .mobileLink,
+  .compactPlus,
+  .plusIcon,
+  .compactLink {
     transition: none;
   }
 }

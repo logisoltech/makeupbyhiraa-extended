@@ -30,118 +30,272 @@ function BookingArrow() {
   );
 }
 
+function resolveNavMode(heroReady, heroProgress) {
+  if (!heroReady || heroProgress < 0.95) return "hidden";
+
+  const hero = document.querySelector("[data-hero]");
+  const heroHeight = hero?.offsetHeight || window.innerHeight;
+  const threshold = Math.max(heroHeight - 80, window.innerHeight * 0.7);
+
+  if (window.scrollY < threshold) return "full";
+  return "compact";
+}
+
 export default function Navbar() {
   const { openBooking } = useBookingModal();
-  const shellRef = useRef(null);
-  const revealTween = useRef(null);
+  const fullRef = useRef(null);
+  const compactRef = useRef(null);
+  const menuRef = useRef(null);
+  const modeRef = useRef("hidden");
+  const heroReadyRef = useRef(false);
+  const heroProgressRef = useRef(0);
+  const fullTween = useRef(null);
+  const compactTween = useRef(null);
+  const menuTween = useRef(null);
+
+  const [mode, setMode] = useState("hidden");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [compactMenuOpen, setCompactMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("home");
-  const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
-    const shell = shellRef.current;
-    if (!shell) return;
+    const full = fullRef.current;
+    const compact = compactRef.current;
+    if (!full || !compact) return;
 
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
 
-    gsap.set(shell, {
+    gsap.set(full, {
       opacity: 0,
-      y: -24,
+      y: -20,
       filter: "blur(8px)",
       pointerEvents: "none",
+      visibility: "hidden",
+    });
+    gsap.set(compact, {
+      opacity: 0,
+      x: -20,
+      yPercent: -50,
+      scale: 0.95,
+      pointerEvents: "none",
+      visibility: "hidden",
     });
 
-    const reveal = () => {
-      setRevealed(true);
-      revealTween.current?.kill();
+    const applyMode = (nextMode) => {
+      if (modeRef.current === nextMode) return;
+      modeRef.current = nextMode;
+      setMode(nextMode);
+      setCompactMenuOpen(false);
 
-      if (reducedMotion) {
-        gsap.set(shell, {
+      fullTween.current?.kill();
+      compactTween.current?.kill();
+
+      const hideFull = (duration = 0.25) => {
+        fullTween.current = gsap.to(full, {
+          opacity: 0,
+          y: -18,
+          filter: reducedMotion ? "none" : "blur(8px)",
+          pointerEvents: "none",
+          duration: reducedMotion ? 0 : duration,
+          ease: "power2.out",
+          overwrite: "auto",
+          onComplete: () => {
+            gsap.set(full, { visibility: "hidden" });
+          },
+        });
+      };
+
+      const showFull = () => {
+        gsap.set(full, { visibility: "visible" });
+        fullTween.current = gsap.to(full, {
           opacity: 1,
           y: 0,
-          filter: "none",
+          filter: "blur(0px)",
           pointerEvents: "auto",
+          duration: reducedMotion ? 0 : 0.45,
+          ease: "power3.out",
+          overwrite: "auto",
         });
+      };
+
+      const hideCompact = (duration = 0.25) => {
+        compactTween.current = gsap.to(compact, {
+          opacity: 0,
+          x: -20,
+          yPercent: -50,
+          scale: 0.95,
+          pointerEvents: "none",
+          duration: reducedMotion ? 0 : duration,
+          ease: "power2.out",
+          overwrite: "auto",
+          onComplete: () => {
+            gsap.set(compact, { visibility: "hidden" });
+          },
+        });
+      };
+
+      const showCompact = () => {
+        gsap.set(compact, { visibility: "visible", yPercent: -50 });
+        compactTween.current = gsap.to(compact, {
+          opacity: 1,
+          x: 0,
+          yPercent: -50,
+          scale: 1,
+          pointerEvents: "auto",
+          duration: reducedMotion ? 0 : 0.45,
+          ease: "power3.out",
+          overwrite: "auto",
+        });
+      };
+
+      if (nextMode === "hidden") {
+        // Instant hide for black intro — never leave navbar flashing.
+        gsap.set(full, {
+          opacity: 0,
+          y: -20,
+          filter: "blur(8px)",
+          pointerEvents: "none",
+          visibility: "hidden",
+        });
+        gsap.set(compact, {
+          opacity: 0,
+          x: -20,
+          yPercent: -50,
+          scale: 0.95,
+          pointerEvents: "none",
+          visibility: "hidden",
+        });
+        setMenuOpen(false);
         return;
       }
 
-      revealTween.current = gsap.to(shell, {
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        pointerEvents: "auto",
-        duration: 0.7,
-        ease: "power3.out",
-        overwrite: "auto",
-      });
+      if (nextMode === "full") {
+        hideCompact(0.25);
+        showFull();
+        return;
+      }
+
+      if (nextMode === "compact") {
+        hideFull(0.25);
+        showCompact();
+      }
     };
 
-    const hide = () => {
-      setRevealed(false);
-      setMenuOpen(false);
-      revealTween.current?.kill();
-
-      revealTween.current = gsap.to(shell, {
-        opacity: 0,
-        y: -24,
-        filter: reducedMotion ? "none" : "blur(8px)",
-        pointerEvents: "none",
-        duration: reducedMotion ? 0 : 0.35,
-        ease: "power2.inOut",
-        overwrite: "auto",
-      });
-    };
-
-    window.addEventListener("hero:intro-complete", reveal);
-    window.addEventListener("hero:intro-reset", hide);
-
-    return () => {
-      window.removeEventListener("hero:intro-complete", reveal);
-      window.removeEventListener("hero:intro-reset", hide);
-      revealTween.current?.kill();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!revealed) {
-      setScrolled(false);
-      return;
-    }
-
-    const onScroll = () => {
+    const syncMode = () => {
+      const next = resolveNavMode(heroReadyRef.current, heroProgressRef.current);
+      applyMode(next);
       setScrolled(window.scrollY > 24);
 
       const services = document.getElementById("services");
       const contact = document.getElementById("contact");
       const y = window.scrollY + window.innerHeight * 0.28;
 
-      if (contact && y >= contact.offsetTop) {
-        setActive("booking");
-      } else if (services && y >= services.offsetTop) {
-        setActive("services");
-      } else {
-        setActive("home");
-      }
+      if (contact && y >= contact.offsetTop) setActive("booking");
+      else if (services && y >= services.offsetTop) setActive("services");
+      else setActive("home");
     };
 
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [revealed]);
+    const onProgress = (event) => {
+      const progress = event.detail?.progress ?? 0;
+      heroProgressRef.current = progress;
+      if (progress < 0.95) {
+        heroReadyRef.current = false;
+      }
+      syncMode();
+    };
+
+    const onComplete = () => {
+      heroReadyRef.current = true;
+      heroProgressRef.current = 1;
+      syncMode();
+    };
+
+    const onReset = () => {
+      heroReadyRef.current = false;
+      heroProgressRef.current = 0;
+      syncMode();
+    };
+
+    // Initial: always hidden (black intro).
+    if (document.body.dataset.heroIntro === "done") {
+      heroReadyRef.current = true;
+      heroProgressRef.current = 1;
+    } else {
+      heroReadyRef.current = false;
+      heroProgressRef.current = 0;
+    }
+    syncMode();
+
+    window.addEventListener("hero:intro-progress", onProgress);
+    window.addEventListener("hero:intro-complete", onComplete);
+    window.addEventListener("hero:intro-reset", onReset);
+    window.addEventListener("scroll", syncMode, { passive: true });
+    window.addEventListener("resize", syncMode);
+
+    return () => {
+      window.removeEventListener("hero:intro-progress", onProgress);
+      window.removeEventListener("hero:intro-complete", onComplete);
+      window.removeEventListener("hero:intro-reset", onReset);
+      window.removeEventListener("scroll", syncMode);
+      window.removeEventListener("resize", syncMode);
+      fullTween.current?.kill();
+      compactTween.current?.kill();
+      menuTween.current?.kill();
+    };
+  }, []);
 
   useEffect(() => {
-    if (!menuOpen) return;
+    const menu = menuRef.current;
+    if (!menu) return;
+
+    menuTween.current?.kill();
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (compactMenuOpen) {
+      gsap.set(menu, { display: "flex" });
+      menuTween.current = gsap.fromTo(
+        menu,
+        { opacity: 0, x: -10, scale: 0.96 },
+        {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          duration: reducedMotion ? 0 : 0.3,
+          ease: "power3.out",
+        }
+      );
+    } else {
+      menuTween.current = gsap.to(menu, {
+        opacity: 0,
+        x: -10,
+        scale: 0.96,
+        duration: reducedMotion ? 0 : 0.2,
+        ease: "power2.out",
+        onComplete: () => {
+          gsap.set(menu, { display: "none" });
+        },
+      });
+    }
+  }, [compactMenuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen && !compactMenuOpen) return;
 
     const onKey = (event) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        setCompactMenuOpen(false);
+      }
     };
 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
+  }, [menuOpen, compactMenuOpen]);
 
   const handleNav = (event, link) => {
     event.preventDefault();
@@ -150,6 +304,7 @@ export default function Navbar() {
       openBooking();
       setActive("booking");
       setMenuOpen(false);
+      setCompactMenuOpen(false);
       return;
     }
 
@@ -158,95 +313,148 @@ export default function Navbar() {
       setActive("home");
     } else {
       const target = document.querySelector(link.href);
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth" });
-      }
+      if (target) target.scrollIntoView({ behavior: "smooth" });
       setActive(link.id);
     }
+
     setMenuOpen(false);
+    setCompactMenuOpen(false);
   };
 
+  const fullActive = mode === "full";
+  const compactActive = mode === "compact";
+
   return (
-    <div
-      ref={shellRef}
-      className={`${styles.shell} ${revealed ? styles.shellRevealed : ""}`}
-      aria-hidden={!revealed}
-    >
-      <nav
-        className={`${styles.bar} ${scrolled ? styles.barScrolled : ""}`}
-        aria-label="Primary"
+    <>
+      <div
+        ref={fullRef}
+        className={`${styles.shell} ${fullActive ? styles.shellActive : ""}`}
+        aria-hidden={!fullActive}
       >
-        <a
-          href="#"
-          className={styles.logo}
-          tabIndex={revealed ? 0 : -1}
-          onClick={(event) => handleNav(event, LINKS[0])}
+        <nav
+          className={`${styles.bar} ${scrolled ? styles.barScrolled : ""}`}
+          aria-label="Primary"
         >
-          Makeup By Hiraa
-        </a>
+          <a
+            href="#"
+            className={styles.logo}
+            tabIndex={fullActive ? 0 : -1}
+            onClick={(event) => handleNav(event, LINKS[0])}
+          >
+            Makeup By Hiraa
+          </a>
 
-        <div className={styles.desktopNav}>
-          {LINKS.map((link) => (
-            <a
-              key={link.id}
-              href={link.href}
-              tabIndex={revealed ? 0 : -1}
-              className={[
-                styles.link,
-                link.booking ? styles.booking : "",
-                active === link.id ? styles.linkActive : "",
-                link.booking && active === link.id ? styles.bookingActive : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onClick={(event) => handleNav(event, link)}
-            >
-              <span>{link.label}</span>
-              {link.booking ? <BookingArrow /> : null}
-            </a>
-          ))}
-        </div>
+          <div className={styles.desktopNav}>
+            {LINKS.map((link) => (
+              <a
+                key={link.id}
+                href={link.href}
+                tabIndex={fullActive ? 0 : -1}
+                className={[
+                  styles.link,
+                  link.booking ? styles.booking : "",
+                  active === link.id ? styles.linkActive : "",
+                  link.booking && active === link.id ? styles.bookingActive : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={(event) => handleNav(event, link)}
+              >
+                <span>{link.label}</span>
+                {link.booking ? <BookingArrow /> : null}
+              </a>
+            ))}
+          </div>
 
-        <button
-          type="button"
-          className={`${styles.menuBtn} ${menuOpen ? styles.menuOpen : ""}`}
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={menuOpen}
-          tabIndex={revealed ? 0 : -1}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          <span className={styles.menuIcon}>
-            <span />
-            <span />
-            <span />
+          <button
+            type="button"
+            className={`${styles.menuBtn} ${menuOpen ? styles.menuOpen : ""}`}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            tabIndex={fullActive ? 0 : -1}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <span className={styles.menuIcon}>
+              <span />
+              <span />
+              <span />
+            </span>
+          </button>
+
+          <div
+            className={`${styles.mobilePanel} ${
+              menuOpen ? styles.mobilePanelOpen : ""
+            }`}
+          >
+            {LINKS.map((link) => (
+              <a
+                key={link.id}
+                href={link.href}
+                tabIndex={fullActive && menuOpen ? 0 : -1}
+                className={[
+                  styles.mobileLink,
+                  link.booking ? styles.mobileBooking : "",
+                  active === link.id ? styles.mobileLinkActive : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={(event) => handleNav(event, link)}
+              >
+                <span>{link.label}</span>
+                {link.booking ? <BookingArrow /> : null}
+              </a>
+            ))}
+          </div>
+        </nav>
+      </div>
+
+      <div
+        ref={compactRef}
+        className={`${styles.compact} ${
+          compactActive ? styles.compactActive : ""
+        }`}
+        aria-hidden={!compactActive}
+      >
+        <div className={styles.compactBar}>
+          <span className={styles.compactMark} aria-hidden="true">
+            H
           </span>
-        </button>
 
-        <div
-          className={`${styles.mobilePanel} ${
-            menuOpen ? styles.mobilePanelOpen : ""
-          }`}
-        >
-          {LINKS.map((link) => (
-            <a
-              key={link.id}
-              href={link.href}
-              tabIndex={revealed && menuOpen ? 0 : -1}
-              className={[
-                styles.mobileLink,
-                link.booking ? styles.mobileBooking : "",
-                active === link.id ? styles.mobileLinkActive : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onClick={(event) => handleNav(event, link)}
-            >
-              <span>{link.label}</span>
-              {link.booking ? <BookingArrow /> : null}
-            </a>
-          ))}
+          <button
+            type="button"
+            className={`${styles.compactPlus} ${
+              compactMenuOpen ? styles.compactPlusOpen : ""
+            }`}
+            aria-label={compactMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={compactMenuOpen}
+            tabIndex={compactActive ? 0 : -1}
+            onClick={() => setCompactMenuOpen((open) => !open)}
+          >
+            <span className={styles.plusIcon} aria-hidden="true" />
+          </button>
+
+          <div ref={menuRef} className={styles.compactMenu}>
+            {LINKS.map((link) => (
+              <a
+                key={link.id}
+                href={link.href}
+                tabIndex={compactActive && compactMenuOpen ? 0 : -1}
+                className={[
+                  styles.compactLink,
+                  link.booking ? styles.compactBooking : "",
+                  active === link.id ? styles.compactLinkActive : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={(event) => handleNav(event, link)}
+              >
+                <span>{link.label}</span>
+                {link.booking ? <BookingArrow /> : null}
+              </a>
+            ))}
+          </div>
         </div>
-      </nav>
-    </div>
+      </div>
+    </>
   );
 }

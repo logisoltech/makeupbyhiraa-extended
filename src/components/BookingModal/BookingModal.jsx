@@ -22,6 +22,18 @@ const INITIAL_FORM = {
   message: "",
 };
 
+function allowCardScroll(card, deltaY) {
+  if (!card) return false;
+  const { scrollTop, scrollHeight, clientHeight } = card;
+  const canScroll = scrollHeight > clientHeight + 1;
+  if (!canScroll) return false;
+  const atTop = scrollTop <= 0;
+  const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+  if (deltaY < 0 && atTop) return false;
+  if (deltaY > 0 && atBottom) return false;
+  return true;
+}
+
 export default function BookingModal() {
   const { isOpen, closeBooking } = useBookingModal();
   const [mounted, setMounted] = useState(false);
@@ -32,6 +44,8 @@ export default function BookingModal() {
   const overlayRef = useRef(null);
   const cardRef = useRef(null);
   const tweenRef = useRef(null);
+  const scrollYRef = useRef(0);
+  const touchYRef = useRef(0);
 
   useEffect(() => {
     setMounted(true);
@@ -40,14 +54,51 @@ export default function BookingModal() {
   useEffect(() => {
     if (!mounted) return;
 
+    const html = document.documentElement;
+    const body = document.body;
+
     if (isOpen) {
       setVisible(true);
       setSubmitted(false);
       setForm(INITIAL_FORM);
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
+
+      scrollYRef.current = window.scrollY;
+      body.dataset.bookingLock = "true";
+      html.style.overflow = "hidden";
+      html.style.overscrollBehavior = "none";
+      body.style.overflow = "hidden";
+      body.style.overscrollBehavior = "none";
+      body.style.position = "fixed";
+      body.style.top = `-${scrollYRef.current}px`;
+      body.style.left = "0";
+      body.style.right = "0";
+      body.style.width = "100%";
+      return;
     }
-  }, [isOpen, mounted]);
+
+    if (!visible) return;
+
+    // Unlock is handled after close animation completes.
+  }, [isOpen, mounted, visible]);
+
+  const unlockPageScroll = () => {
+    const html = document.documentElement;
+    const body = document.body;
+    const scrollY = scrollYRef.current;
+
+    delete body.dataset.bookingLock;
+    html.style.overflow = "";
+    html.style.overscrollBehavior = "";
+    body.style.overflow = "";
+    body.style.overscrollBehavior = "";
+    body.style.position = "";
+    body.style.top = "";
+    body.style.left = "";
+    body.style.right = "";
+    body.style.width = "";
+
+    window.scrollTo(0, scrollY);
+  };
 
   useLayoutEffect(() => {
     if (!visible) return;
@@ -82,7 +133,10 @@ export default function BookingModal() {
           },
           0
         );
-      return;
+
+      return () => {
+        tweenRef.current?.kill();
+      };
     }
 
     tweenRef.current = gsap
@@ -90,8 +144,7 @@ export default function BookingModal() {
         defaults: { ease: "power2.inOut" },
         onComplete: () => {
           setVisible(false);
-          document.documentElement.style.overflow = "";
-          document.body.style.overflow = "";
+          unlockPageScroll();
         },
       })
       .to(overlay, {
@@ -121,15 +174,67 @@ export default function BookingModal() {
       if (event.key === "Escape") closeBooking();
     };
 
+    const onWheel = (event) => {
+      const card = cardRef.current;
+      const insideCard = Boolean(card && card.contains(event.target));
+
+      event.stopPropagation();
+
+      if (insideCard && allowCardScroll(card, event.deltaY)) {
+        return;
+      }
+
+      event.preventDefault();
+    };
+
+    const onTouchStart = (event) => {
+      touchYRef.current = event.touches[0]?.clientY ?? 0;
+    };
+
+    const onTouchMove = (event) => {
+      const card = cardRef.current;
+      const insideCard = Boolean(card && card.contains(event.target));
+      const currentY = event.touches[0]?.clientY ?? 0;
+      const deltaY = touchYRef.current - currentY;
+
+      event.stopPropagation();
+
+      if (insideCard && allowCardScroll(card, deltaY)) {
+        touchYRef.current = currentY;
+        return;
+      }
+
+      event.preventDefault();
+    };
+
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("wheel", onWheel, {
+      capture: true,
+      passive: false,
+    });
+    window.addEventListener("touchstart", onTouchStart, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener("touchmove", onTouchMove, {
+      capture: true,
+      passive: false,
+    });
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("wheel", onWheel, { capture: true });
+      window.removeEventListener("touchstart", onTouchStart, { capture: true });
+      window.removeEventListener("touchmove", onTouchMove, { capture: true });
+    };
   }, [isOpen, closeBooking]);
 
   useEffect(() => {
     return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
       tweenRef.current?.kill();
+      if (document.body.dataset.bookingLock === "true") {
+        unlockPageScroll();
+      }
     };
   }, []);
 

@@ -8,29 +8,38 @@
 
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.25rem;
+  padding: 24px;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 .overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background: rgba(58, 31, 35, 0.22);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  z-index: 0;
+  background: rgba(58, 31, 35, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: none;
   cursor: pointer;
+  touch-action: none;
 }
 
 .card {
   position: relative;
   z-index: 1;
   width: min(680px, 92vw);
-  max-height: 90vh;
-  overflow: auto;
+  max-height: 88vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   padding: clamp(1.6rem, 3vw, 2.35rem);
   border-radius: 34px;
   background: rgba(255, 241, 245, 0.72);
@@ -40,21 +49,36 @@
   box-shadow: 0 30px 90px rgba(58, 31, 35, 0.18);
   color: var(--ink);
   scrollbar-width: thin;
-  scrollbar-color: rgba(58, 31, 35, 0.25) transparent;
+  scrollbar-color: rgba(58, 31, 35, 0.22) transparent;
+}
+
+.card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card::-webkit-scrollbar-thumb {
+  background: rgba(58, 31, 35, 0.22);
+  border-radius: 999px;
+}
+
+.card::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 2.45rem;
   height: 2.45rem;
+  margin: -0.15rem -0.15rem 0.35rem 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: var(--ink);
@@ -257,24 +281,19 @@
 
 @media (max-width: 640px) {
   .root {
-    padding: 0.75rem;
-    align-items: flex-end;
+    padding: 16px;
+    align-items: center;
   }
 
   .card {
     width: 92vw;
-    max-height: 90vh;
+    max-height: 88vh;
     padding: 1.35rem 1.15rem 1.25rem;
     border-radius: 28px;
   }
 
   .form {
     grid-template-columns: 1fr;
-  }
-
-  .close {
-    top: 0.75rem;
-    right: 0.75rem;
   }
 }
 
