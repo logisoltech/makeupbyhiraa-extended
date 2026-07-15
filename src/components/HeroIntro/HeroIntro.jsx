@@ -64,8 +64,24 @@ export default function HeroIntro() {
         window.dispatchEvent(new CustomEvent("hero:intro-reset"));
       };
 
+      // Apply before paint (useGSAP → useLayoutEffect): end CSS FOUC pending state.
       document.body.dataset.heroIntro = "active";
       notifyIntroProgress(0);
+      section.classList.remove(styles.heroIntroPending);
+      gsap.set(textBlocks, {
+        autoAlpha: 0,
+        y: 36,
+        clipPath: "inset(100% 0 0 0)",
+      });
+      gsap.set(black, { autoAlpha: 1 });
+      gsap.set([theme, vignette], { autoAlpha: 0 });
+      const navbarBoot = document.querySelector("[data-main-navbar]");
+      if (navbarBoot) {
+        gsap.set(navbarBoot, {
+          autoAlpha: 0,
+          pointerEvents: "none",
+        });
+      }
 
       if (prefersReducedMotion) {
         gsap.set(black, { opacity: 0 });
@@ -73,7 +89,7 @@ export default function HeroIntro() {
         gsap.set(media, { clearProps: "all", opacity: 1, x: 0, scale: 1 });
         gsap.set(textBlocks, {
           clearProps: "all",
-          opacity: 1,
+          autoAlpha: 1,
           y: 0,
           clipPath: "none",
         });
@@ -81,11 +97,10 @@ export default function HeroIntro() {
         if (navbarReduced) {
           gsap.set(navbarReduced, {
             xPercent: -50,
-            opacity: 1,
+            autoAlpha: 1,
             y: 0,
             filter: "blur(0px)",
             pointerEvents: "auto",
-            visibility: "visible",
           });
         }
         notifyIntroComplete();
@@ -118,12 +133,13 @@ export default function HeroIntro() {
         let navbarAttached = false;
 
         // Desktop: keep image in the RIGHT grid column; only animate x.
+        // Force layout after removing FOUC pending class, then measure center offset.
         gsap.set(media, {
-          clearProps: "position,left,top,xPercent,yPercent,margin",
+          clearProps: "position,left,top,xPercent,yPercent,margin,transform",
           x: 0,
           y: 0,
           scale: 1,
-          opacity: 1,
+          autoAlpha: 1,
         });
 
         const getCenterOffset = () => {
@@ -132,14 +148,16 @@ export default function HeroIntro() {
           return window.innerWidth / 2 - mediaCenter;
         };
 
+        // Flush pending→grid so getBoundingClientRect is accurate.
+        void media.offsetWidth;
         const centerX = getCenterOffset();
 
-        gsap.set(black, { opacity: 1 });
-        gsap.set(theme, { opacity: 0 });
-        gsap.set(vignette, { opacity: 0 });
-        gsap.set(media, { x: centerX, y: 0, scale: 1, opacity: 1 });
+        gsap.set(black, { autoAlpha: 1 });
+        gsap.set(theme, { autoAlpha: 0 });
+        gsap.set(vignette, { autoAlpha: 0 });
+        gsap.set(media, { x: centerX, y: 0, scale: 1, autoAlpha: 1 });
         gsap.set(textBlocks, {
-          opacity: 0,
+          autoAlpha: 0,
           y: 36,
           clipPath: "inset(100% 0 0 0)",
         });
@@ -171,17 +189,16 @@ export default function HeroIntro() {
           if (!navbar) return;
           gsap.set(navbar, {
             xPercent: -50,
-            opacity: 0,
+            autoAlpha: 0,
             y: -14,
             filter: "blur(8px)",
             pointerEvents: "none",
-            visibility: "visible",
           });
           tl.to(
             navbar,
             {
               xPercent: -50,
-              opacity: 1,
+              autoAlpha: 1,
               y: 0,
               filter: "blur(0px)",
               pointerEvents: "auto",
@@ -207,18 +224,18 @@ export default function HeroIntro() {
           },
           0
         )
-          .to(theme, { opacity: 1, duration: 1.25, ease: "power2.inOut" }, 0)
-          .to(black, { opacity: 0, duration: 1.25, ease: "power2.inOut" }, 0)
+          .to(theme, { autoAlpha: 1, duration: 1.25, ease: "power2.inOut" }, 0)
+          .to(black, { autoAlpha: 0, duration: 1.25, ease: "power2.inOut" }, 0)
           .to(
             vignette,
-            { opacity: 1, duration: 1.1, ease: "power2.out" },
+            { autoAlpha: 1, duration: 1.1, ease: "power2.out" },
             0.1
           )
           .addLabel("heroReveal", 0.55)
           .to(
             [label, ...titleLines],
             {
-              opacity: 1,
+              autoAlpha: 1,
               y: 0,
               clipPath: "inset(0% 0 0 0)",
               duration: 0.85,
@@ -230,7 +247,7 @@ export default function HeroIntro() {
           .to(
             desc,
             {
-              opacity: 1,
+              autoAlpha: 1,
               y: 0,
               clipPath: "inset(0% 0 0 0)",
               duration: 0.7,
@@ -241,7 +258,7 @@ export default function HeroIntro() {
           .to(
             ctas,
             {
-              opacity: 1,
+              autoAlpha: 1,
               y: 0,
               clipPath: "inset(0% 0 0 0)",
               duration: 0.65,
@@ -386,24 +403,25 @@ export default function HeroIntro() {
 
         // Mobile: one relative wrapper; only y/scale transforms (no position switch).
         gsap.set(media, {
-          clearProps: "position,left,top,xPercent,yPercent,margin",
+          clearProps: "position,left,top,xPercent,yPercent,margin,transform",
           x: 0,
           y: 0,
           scale: 1,
-          opacity: 1,
+          autoAlpha: 1,
         });
 
-        // Measure natural top slot, then offset to viewport center for intro.
+        // Measure natural top slot after FOUC pending class is removed.
+        void media.offsetWidth;
         const rect = media.getBoundingClientRect();
         const introY =
           window.innerHeight / 2 - (rect.top + rect.height / 2);
 
-        gsap.set(black, { opacity: 1 });
-        gsap.set(theme, { opacity: 0 });
-        gsap.set(vignette, { opacity: 0 });
-        gsap.set(media, { x: 0, y: introY, scale: 0.9, opacity: 1 });
+        gsap.set(black, { autoAlpha: 1 });
+        gsap.set(theme, { autoAlpha: 0 });
+        gsap.set(vignette, { autoAlpha: 0 });
+        gsap.set(media, { x: 0, y: introY, scale: 0.9, autoAlpha: 1 });
         gsap.set(textBlocks, {
-          opacity: 0,
+          autoAlpha: 0,
           y: 36,
           clipPath: "inset(100% 0 0 0)",
         });
@@ -435,17 +453,16 @@ export default function HeroIntro() {
           if (!navbar) return;
           gsap.set(navbar, {
             xPercent: -50,
-            opacity: 0,
+            autoAlpha: 0,
             y: -14,
             filter: "blur(8px)",
             pointerEvents: "none",
-            visibility: "visible",
           });
           tl.to(
             navbar,
             {
               xPercent: -50,
-              opacity: 1,
+              autoAlpha: 1,
               y: 0,
               filter: "blur(0px)",
               pointerEvents: "auto",
@@ -471,18 +488,18 @@ export default function HeroIntro() {
           },
           0
         )
-          .to(theme, { opacity: 1, duration: 1.25, ease: "power2.inOut" }, 0)
-          .to(black, { opacity: 0, duration: 1.25, ease: "power2.inOut" }, 0)
+          .to(theme, { autoAlpha: 1, duration: 1.25, ease: "power2.inOut" }, 0)
+          .to(black, { autoAlpha: 0, duration: 1.25, ease: "power2.inOut" }, 0)
           .to(
             vignette,
-            { opacity: 1, duration: 1.1, ease: "power2.out" },
+            { autoAlpha: 1, duration: 1.1, ease: "power2.out" },
             0.1
           )
           .addLabel("heroReveal", 0.55)
           .to(
             [label, ...titleLines],
             {
-              opacity: 1,
+              autoAlpha: 1,
               y: 0,
               clipPath: "inset(0% 0 0 0)",
               duration: 0.85,
@@ -494,7 +511,7 @@ export default function HeroIntro() {
           .to(
             desc,
             {
-              opacity: 1,
+              autoAlpha: 1,
               y: 0,
               clipPath: "inset(0% 0 0 0)",
               duration: 0.7,
@@ -505,7 +522,7 @@ export default function HeroIntro() {
           .to(
             ctas,
             {
-              opacity: 1,
+              autoAlpha: 1,
               y: 0,
               clipPath: "inset(0% 0 0 0)",
               duration: 0.65,
@@ -651,7 +668,7 @@ export default function HeroIntro() {
   return (
     <section
       ref={sectionRef}
-      className={styles.hero}
+      className={`${styles.hero} ${styles.heroIntroPending}`}
       data-hero
       aria-label="Makeup By Hiraa"
     >

@@ -19,8 +19,9 @@
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 0 10px 30px rgba(58, 31, 35, 0.04);
-  /* Visibility/opacity driven by hero timeline + navbar state GSAP */
+  /* FOUC + GSAP: hidden until hero reveal */
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
   will-change: opacity, transform, filter;
   box-sizing: border-box;
